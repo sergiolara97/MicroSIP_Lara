@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- net472 viene instalado de serie en Windows 10/11: el usuario no necesita
+         instalar ning�n runtime .NET adicional. -->
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>JabraBridge</AssemblyName>
+    <RootNamespace>JabraBridge</RootNamespace>
+    <Platforms>AnyCPU</Platforms>
+    <Version>1.0.0</Version>
+    <Company>MicroSIP</Company>
+    <Product>MicroSIP Jabra Bridge</Product>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <!-- No incrustar rutas locales del equipo de compilacion en el ensamblado. -->
+    <PathMap>$(MSBuildProjectDirectory)=.</PathMap>
+    <DebugType Condition="'$(Configuration)' == 'Release'">none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jabra.NET.Sdk" Version="4.10.1" />
+    <PackageReference Include="Jabra.NET.Sdk.Properties" Version="2.5.1.1" />
+    <PackageReference Include="Jabra.Properties.Definition" Version="14.6.3" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="System.Text.Json" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.12" />
+  </ItemGroup>
+
+</Project>

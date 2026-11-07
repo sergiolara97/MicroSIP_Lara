@@ -1,0 +1,2422 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MicroSIP Modern</title>
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<style>
+  /* ============================================================
+     Tokens de diseño
+     ============================================================ */
+  :root {
+    --accent: #c60c30;
+    --accent-hover: #a90a28;
+    --accent-light: #e2465f;
+    --accent-rgb: 198, 12, 48;
+    --accent-soft: rgba(198, 12, 48, .12);
+    --green: #1f9d55;
+    --green-soft: rgba(31, 157, 85, .14);
+    --red: #d92d20;
+    --red-soft: rgba(217, 45, 32, .14);
+    --amber: #d97706;
+
+    --bg: #f2f3f5;
+    --surface: #ffffff;
+    --surface-2: #f7f8fa;
+    --surface-3: #eceef1;
+    --text: #16181d;
+    --text-2: #5c6370;
+    --text-3: #8b93a1;
+    --border: rgba(16, 20, 30, .10);
+    --border-strong: rgba(16, 20, 30, .16);
+    --shadow-lg: 0 30px 80px rgba(10, 14, 25, .28), 0 2px 8px rgba(10, 14, 25, .10);
+    --shadow-sm: 0 1px 2px rgba(10, 14, 25, .06), 0 4px 14px rgba(10, 14, 25, .06);
+    --glass: rgba(255, 255, 255, .72);
+
+    --r-lg: 22px;
+    --r-md: 14px;
+    --r-sm: 10px;
+  }
+
+  html[data-theme="dark"] {
+    --bg: #0e1013;
+    --surface: #171a1f;
+    --surface-2: #1d2127;
+    --surface-3: #262b33;
+    --text: #f2f4f7;
+    --text-2: #a4adba;
+    --text-3: #6f7885;
+    --border: rgba(255, 255, 255, .09);
+    --border-strong: rgba(255, 255, 255, .16);
+    --shadow-lg: 0 30px 90px rgba(0, 0, 0, .65), 0 2px 10px rgba(0, 0, 0, .45);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .28);
+    --glass: rgba(23, 26, 31, .72);
+    --accent-soft: rgba(198, 12, 48, .22);
+    --green-soft: rgba(31, 157, 85, .22);
+    --red-soft: rgba(217, 45, 32, .22);
+  }
+
+  /* Acentos seleccionables. Van despues del tema oscuro para que sus
+     variables manden, y los tonos "soft" tienen variante oscura. */
+  html[data-accent="red"] {
+    --accent: #c60c30;
+    --accent-hover: #a90a28;
+    --accent-light: #e2465f;
+    --accent-rgb: 198, 12, 48;
+    --accent-soft: rgba(198, 12, 48, .12);
+  }
+
+  html[data-accent="green"] {
+    --accent: #1f9d55;
+    --accent-hover: #178044;
+    --accent-light: #34c777;
+    --accent-rgb: 31, 157, 85;
+    --accent-soft: rgba(31, 157, 85, .14);
+  }
+
+  html[data-accent="blue"] {
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-light: #60a5fa;
+    --accent-rgb: 37, 99, 235;
+    --accent-soft: rgba(37, 99, 235, .14);
+  }
+
+  html[data-theme="dark"][data-accent="red"] { --accent-soft: rgba(198, 12, 48, .22); }
+  html[data-theme="dark"][data-accent="green"] { --accent-soft: rgba(31, 157, 85, .22); }
+  html[data-theme="dark"][data-accent="blue"] { --accent-soft: rgba(37, 99, 235, .22); }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background:
+      radial-gradient(1200px 700px at 15% -10%, rgba(var(--accent-rgb), .16), transparent 60%),
+      radial-gradient(900px 600px at 90% 110%, rgba(70, 90, 140, .18), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+  input { font: inherit; color: inherit; }
+  svg { display: block; }
+
+  /* ============================================================
+     Escenario
+     ============================================================ */
+  .stage {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    padding: 28px 20px 40px;
+  }
+
+  .stage-head {
+    width: min(960px, 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .brand {
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: -.01em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand .logo-tile {
+    width: 22px; height: 22px;
+    border-radius: 7px;
+    display: grid; place-items: center;
+    background: linear-gradient(140deg, var(--accent-light), var(--accent));
+    box-shadow: 0 2px 8px rgba(var(--accent-rgb), .30);
+    flex: 0 0 auto;
+  }
+
+  .brand .logo-tile img { width: 13px; height: 13px; display: block; }
+
+  .brand span { color: var(--text-3); font-weight: 500; }
+
+  .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .seg {
+    display: flex;
+    padding: 3px;
+    gap: 2px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+  }
+
+  .seg button {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 550;
+    color: var(--text-2);
+    transition: background .16s, color .16s;
+  }
+
+  .seg button.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .ghost {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 12.5px;
+    font-weight: 550;
+    color: var(--text-2);
+    transition: border-color .16s, color .16s, transform .12s;
+  }
+
+  .ghost:hover { border-color: var(--border-strong); color: var(--text); }
+  .ghost:active { transform: scale(.98); }
+
+  /* ============================================================
+     Teléfono
+     ============================================================ */
+  .phone {
+    position: relative;
+    width: 420px;
+    height: 760px;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .app-head {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--glass);
+    backdrop-filter: blur(18px) saturate(140%);
+  }
+
+  .avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-weight: 650;
+    font-size: 13px;
+    color: #fff;
+    background: linear-gradient(140deg, var(--accent-light), var(--accent));
+    flex: 0 0 auto;
+  }
+
+  .app-head .avatar {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(var(--accent-rgb), .28);
+  }
+
+  .logo-mark {
+    width: 23px;
+    height: 23px;
+    display: block;
+  }
+
+  .head-meta { min-width: 0; flex: 1; }
+  .head-meta .name { font-size: 14px; font-weight: 650; letter-spacing: -.01em; }
+  .head-meta .status {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text-2); margin-top: 1px;
+  }
+
+  .presence {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 3px var(--green-soft);
+  }
+
+  .head-actions { display: flex; gap: 6px; position: relative; }
+
+  .head-menu {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    min-width: 170px;
+    padding: 6px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    box-shadow: var(--shadow-lg);
+    z-index: 30;
+  }
+
+  .head-menu[hidden] { display: none; }
+
+  .head-menu button {
+    display: block;
+    width: 100%;
+    padding: 9px 10px;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 13px;
+    color: var(--text);
+    transition: background .14s;
+  }
+
+  .head-menu button:hover { background: var(--surface-3); }
+  .head-menu button.danger { color: var(--red); }
+
+  .head-menu button.on::after {
+    content: "\2713";
+    float: right;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* Atajos de marcacion rapida */
+  .dial-shortcuts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 6px 8px;
+  }
+
+  .dial-shortcuts[hidden] { display: none; }
+
+  .shortcut-btn {
+    padding: 7px 11px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+    max-width: 46%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: background .14s, border-color .14s;
+  }
+
+  .shortcut-btn:hover {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+
+  .shortcut-actions {
+    display: flex;
+    gap: 8px;
+    padding: 0 4px 12px;
+  }
+
+  .shortcut-actions .save-btn { flex: 1; }
+
+  .save-btn.ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    box-shadow: none;
+  }
+
+  .save-btn.ghost:hover { color: var(--text); }
+
+  .row-del {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    color: var(--text-3);
+    background: transparent;
+  }
+
+  .row-del:hover { background: var(--accent-soft); color: var(--accent); }
+
+  .search-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 4px 12px;
+  }
+
+  .search-head .field { margin-top: 0; flex: 1; }
+  #view-search .row { cursor: pointer; }
+
+  .icon-btn {
+    width: 34px; height: 34px;
+    display: grid; place-items: center;
+    border-radius: 10px;
+    color: var(--text-2);
+    transition: background .16s, color .16s;
+  }
+
+  .icon-btn:hover { background: var(--surface-3); color: var(--text); }
+
+  .app-body {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .view {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 18px 18px 8px;
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+    scrollbar-width: thin;
+  }
+
+  .view.active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  /* Evita que el contenido se comprima dentro del flex (Ajustes se cortaba) */
+  .view > * { flex: 0 0 auto; }
+
+  #view-settings { padding-bottom: 24px; }
+
+  .view.overlay {
+    padding: 0;
+    z-index: 5;
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  /* ============================================================
+     Acerca de
+     ============================================================ */
+  #view-about {
+    display: none;
+    place-items: center;
+    padding: 22px;
+  }
+
+  #view-about.active { display: grid; }
+
+  .about {
+    width: min(300px, 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 26px 22px 22px;
+    border-radius: 20px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+  }
+
+  .about-logo {
+    width: 64px; height: 64px;
+    border-radius: 18px;
+    display: grid; place-items: center;
+    background: linear-gradient(140deg, var(--accent-light), var(--accent));
+    box-shadow: 0 10px 26px rgba(var(--accent-rgb), .32);
+    margin-bottom: 6px;
+  }
+
+  .about-logo img { width: 34px; height: 34px; display: block; }
+
+  .about-name { font-size: 16px; font-weight: 680; letter-spacing: -.02em; }
+  .about-ver { font-size: 12px; color: var(--text-2); }
+  .about-note { margin: 4px 0 12px; font-size: 12px; line-height: 1.5; color: var(--text-3); }
+
+  /* ============================================================
+     Dialer
+     ============================================================ */
+  #view-dialer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  #view-dialer .keypad {
+    flex: 0 1 278px;
+    min-height: 206px;
+    align-content: stretch;
+    grid-auto-rows: minmax(0, 1fr);
+  }
+
+  #view-dialer .dial-actions {
+    flex: 0 0 auto;
+    padding-bottom: 0;
+  }
+
+  .dial-display {
+    padding: 10px 4px 6px;
+    text-align: center;
+    flex: 0 0 auto;
+  }
+
+  .dial-number {
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dial-number .placeholder { color: var(--text-3); font-weight: 450; font-size: 20px; }
+
+  .dial-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    text-align: center;
+  }
+
+  .dial-input::placeholder { color: var(--text-3); font-weight: 450; font-size: 20px; }
+  .dial-input::selection { background: var(--accent-soft); }
+
+  .dial-menu {
+    position: fixed;
+    z-index: 40;
+    min-width: 130px;
+    padding: 6px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .dial-menu[hidden] { display: none; }
+
+  .dial-menu button {
+    display: block;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 7px;
+    text-align: left;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .dial-menu button:hover { background: var(--surface-3); }
+
+  .dial-hint {
+    margin-top: 2px;
+    font-size: 12.5px;
+    color: var(--text-2);
+    min-height: 18px;
+  }
+
+  .backspace {
+    margin-left: 4px;
+    width: 30px; height: 30px;
+    display: grid; place-items: center;
+    border-radius: 9px;
+    color: var(--text-3);
+    visibility: hidden;
+  }
+
+  .backspace.show { visibility: visible; }
+  .backspace:hover { background: var(--surface-3); color: var(--text); }
+
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 6px 8px 10px;
+  }
+
+  .key {
+    height: auto;
+    border-radius: 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    transition: background .12s, transform .08s, border-color .12s;
+  }
+
+  .key:hover { background: var(--surface-3); border-color: var(--border-strong); }
+  .key:active { transform: scale(.96); }
+  .key .digit { font-size: 21px; font-weight: 600; line-height: 1; }
+  .key .letters { font-size: 9.5px; letter-spacing: .12em; color: var(--text-3); font-weight: 600; }
+
+  .dial-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 4px 0 10px;
+  }
+
+  .call-btn {
+    width: 66px; height: 66px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: #fff;
+    background: var(--green);
+    box-shadow: 0 8px 22px var(--green-soft), 0 2px 6px rgba(0,0,0,.16);
+    transition: transform .1s, filter .16s;
+  }
+
+  .call-btn:hover { filter: brightness(1.06); }
+  .call-btn:active { transform: scale(.95); }
+
+  .side-action {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: var(--text-2);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    transition: background .16s, color .16s;
+  }
+
+  .side-action:hover { background: var(--surface-3); color: var(--text); }
+
+  /* Acciones rápidas del teclado */
+  .quick-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 10px 8px 2px;
+  }
+
+  .chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-2);
+    font-size: 11.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background .16s, color .16s, border-color .16s, transform .08s;
+  }
+
+  .chip svg { width: 16px; height: 16px; flex: 0 0 auto; }
+  .chip:hover { background: var(--surface-3); color: var(--text); }
+  .chip:active { transform: scale(.97); }
+
+  .chip[hidden] { display: none; }
+
+  .chip.on {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .chip.on.rec {
+    background: var(--red-soft);
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  /* Indicador de grabación en llamada */
+  .rec-wrap { display: flex; justify-content: center; }
+  .rec-pill {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    background: var(--red-soft);
+    color: var(--red);
+    font-size: 11px;
+    font-weight: 650;
+  }
+
+  .rec-pill.show { display: inline-flex; }
+  .rec-pill .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--red);
+    animation: recpulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes recpulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .3; }
+  }
+
+  /* ============================================================
+     Listas (llamadas / contactos)
+     ============================================================ */
+  .search {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 12px;
+    border-radius: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-3);
+    margin-bottom: 14px;
+  }
+
+  .search input {
+    border: 0; outline: 0; background: none;
+    flex: 1; color: var(--text); font-size: 13.5px;
+  }
+
+  .search input::placeholder { color: var(--text-3); }
+
+  .list-label {
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin: 10px 4px 6px;
+  }
+
+  .contact-tools {
+    display: flex;
+    gap: 8px;
+    padding: 0 2px 10px;
+  }
+
+  .contact-form {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .contact-form[hidden] { display: none; }
+
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--text-2);
+    margin-top: 10px;
+  }
+
+  .check input { accent-color: var(--accent); }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 10px;
+    border-radius: 13px;
+    cursor: pointer;
+    transition: background .14s;
+  }
+
+  .row:hover { background: var(--surface-2); }
+
+  .row .avatar.sm { width: 36px; height: 36px; font-size: 12px; }
+
+  .row-main { flex: 1; min-width: 0; }
+  .row-title {
+    font-size: 13.5px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .row-sub {
+    font-size: 12px; color: var(--text-2);
+    display: flex; align-items: center; gap: 6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .row-meta { display: flex; align-items: center; gap: 8px; color: var(--text-3); font-size: 11.5px; }
+
+  .row-call {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: var(--green);
+    background: var(--green-soft);
+    opacity: 0;
+    transform: scale(.9);
+    transition: opacity .14s, transform .14s;
+  }
+
+  .row:hover .row-call { opacity: 1; transform: none; }
+
+  .badge-missed { color: var(--red); }
+  .star { color: var(--amber); }
+
+  .empty {
+    margin: auto;
+    text-align: center;
+    color: var(--text-3);
+    font-size: 12.5px;
+    padding: 30px 10px;
+  }
+
+  /* ============================================================
+     Ajustes
+     ============================================================ */
+  .settings-group {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  /* Bloques de ajustes con acceso rapido */
+  .settings-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding: 0 0 10px;
+    margin-top: -4px;
+    background: var(--surface);
+    scrollbar-width: none;
+  }
+
+  .settings-tabs::-webkit-scrollbar { display: none; }
+
+  .settings-tabs button {
+    flex: 0 0 auto;
+    padding: 5px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-2);
+    font-size: 11px;
+    font-weight: 600;
+    transition: background .14s, color .14s, border-color .14s;
+  }
+
+  .settings-tabs button:hover { background: var(--surface-3); color: var(--text); }
+
+  .settings-tabs button.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .settings-block { display: none; }
+  .settings-block.active { display: block; }
+
+  /* Con pestanas, el titulo del bloque es redundante */
+  .settings-block .settings-title { display: none; }
+
+  .settings-title {
+    font-size: 11px; font-weight: 650; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--text-3);
+    margin: 4px 6px 8px;
+  }
+
+  .setting {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .setting:last-child { border-bottom: 0; }
+
+  .setting .txt input[type="range"] {
+    width: 100%;
+    margin-top: 6px;
+    accent-color: var(--accent);
+  }
+
+  .setting .val {
+    font-size: 11.5px;
+    color: var(--text-2);
+    flex: 0 0 auto;
+  }
+
+  .setting .ico {
+    width: 30px; height: 30px;
+    border-radius: 9px;
+    display: grid; place-items: center;
+    background: var(--surface-3);
+    color: var(--text-2);
+    flex: 0 0 auto;
+  }
+
+  /* Marca de la app sobre el degradado del acento. */
+  .setting .ico.brand-ico {
+    background: linear-gradient(140deg, var(--accent-light), var(--accent));
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(var(--accent-rgb), .26);
+  }
+
+  .setting .ico.brand-ico img { width: 17px; height: 17px; display: block; }
+
+  .setting .txt { flex: 1; min-width: 0; }
+  .setting .txt b { display: block; font-size: 13px; font-weight: 600; }
+  .setting .txt span { font-size: 11.5px; color: var(--text-2); }
+
+  .switch {
+    width: 42px; height: 24px;
+    border-radius: 999px;
+    background: var(--surface-3);
+    border: 1px solid var(--border);
+    position: relative;
+    transition: background .18s;
+    flex: 0 0 auto;
+  }
+
+  .switch::after {
+    content: "";
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.25);
+    transition: transform .18s;
+  }
+
+  .switch.on { background: var(--accent); border-color: transparent; }
+  .switch.on::after { transform: translateX(18px); }
+
+  .theme-pick { display: flex; gap: 6px; }
+
+  .theme-pick button {
+    padding: 7px 11px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 12px;
+    font-weight: 550;
+    color: var(--text-2);
+  }
+
+  .theme-pick button.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .swatches { display: flex; gap: 8px; }
+
+  .swatch {
+    width: 26px; height: 26px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
+    cursor: pointer;
+    transition: transform .12s, border-color .12s;
+  }
+
+  .swatch:hover { transform: scale(1.08); }
+  .swatch.active { border-color: var(--text); }
+
+  /* Deslizadores de audio */
+  .setting.audio { align-items: flex-start; }
+  .setting .ico.as-btn { cursor: pointer; transition: background .16s, color .16s; }
+  .setting .ico.as-btn:hover { background: var(--border); }
+  .setting .ico.as-btn.muted { color: var(--accent); background: var(--accent-soft); }
+
+  .slider-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 7px;
+  }
+
+  .slider-line input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--surface-3);
+    outline: none;
+    cursor: pointer;
+  }
+
+  .slider-line input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+    cursor: pointer;
+  }
+
+  .slider-line input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+
+  .slider-line .val {
+    width: 38px;
+    text-align: right;
+    font-size: 11.5px;
+    color: var(--text-2);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Formulario de cuenta */
+  .field {
+    width: 100%;
+    margin-top: 7px;
+    padding: 8px 10px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color .16s, box-shadow .16s;
+  }
+
+  .field:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  .save-btn {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 11px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 650;
+    font-size: 13px;
+    transition: filter .16s, transform .08s;
+  }
+
+  .save-btn:hover { filter: brightness(1.06); }
+  .save-btn:active { transform: scale(.99); }
+
+  .ghost-btn {
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 12.5px;
+    font-weight: 600;
+    transition: background .14s, color .14s, border-color .14s;
+  }
+
+  .ghost-btn:hover {
+    background: var(--surface-3);
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+
+  .config-path {
+    margin-top: 7px;
+    font-size: 10.5px;
+    line-height: 1.35;
+    color: var(--text-3);
+    word-break: break-all;
+  }
+
+  .field-note {
+    margin-top: 5px;
+    font-size: 11px;
+    line-height: 1.35;
+    color: var(--amber);
+  }
+
+  .field-note[hidden] { display: none; }
+
+  .mini-btn {
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 15px;
+    line-height: 1;
+    transition: background .14s, color .14s;
+  }
+
+  .mini-btn:hover { background: var(--surface-3); color: var(--text); }
+
+  .test-btn {
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+
+  .test-btn:hover { background: var(--surface-3); color: var(--text); }
+
+  /* Mensajes */
+  .msg-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 4px 12px;
+  }
+
+  .msg-head .field { margin-top: 0; }
+
+  .msg-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 2px 8px;
+  }
+
+  .msg-chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .msg-thread {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 4px 4px 10px;
+  }
+
+  .bubble {
+    max-width: 80%;
+    align-self: flex-start;
+    padding: 8px 11px;
+    border-radius: 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+
+  .bubble.out {
+    align-self: flex-end;
+    background: var(--accent);
+    border-color: transparent;
+    color: #fff;
+  }
+
+  .bubble.failed {
+    background: var(--red-soft);
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  .bubble .meta {
+    display: block;
+    margin-top: 4px;
+    font-size: 10px;
+    opacity: .65;
+  }
+
+  .msg-compose {
+    display: flex;
+    gap: 8px;
+    padding: 8px 4px 2px;
+    border-top: 1px solid var(--border);
+  }
+
+  .msg-compose .field { margin-top: 0; flex: 1; }
+  .msg-compose .save-btn { width: auto; padding: 9px 14px; }
+
+  .msg-peer {
+    font-weight: 650;
+    font-size: 13px;
+  }
+
+  .msg-preview {
+    font-size: 12px;
+    color: var(--text-2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ============================================================
+     En llamada
+     ============================================================ */
+  .incall {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 20px 22px 18px;
+    background:
+      radial-gradient(600px 320px at 50% -10%, var(--accent-soft), transparent 70%),
+      var(--surface);
+  }
+
+  .incall .who { text-align: center; margin-bottom: 6px; }
+  .incall .who .avatar.big {
+    width: 82px; height: 82px;
+    font-size: 26px;
+    margin: 0 auto 12px;
+  }
+  .incall .who .name { font-size: 20px; font-weight: 650; letter-spacing: -.01em; }
+  .incall .who .num { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+  .incall .timer {
+    text-align: center;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-2);
+    margin: 8px 0 4px;
+  }
+  .incall .state {
+    text-align: center;
+    font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--green); font-weight: 650;
+  }
+
+  .call-grid {
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px 10px;
+    padding: 10px 4px 14px;
+  }
+
+  .call-grid .cell { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+
+  .round {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    transition: background .16s, transform .1s, color .16s;
+  }
+
+  .round:hover { background: var(--surface-3); }
+  .round:active { transform: scale(.95); }
+  .round.on { background: var(--accent); border-color: transparent; color: #fff; }
+  .round.danger { background: var(--red); border-color: transparent; color: #fff; }
+
+  .cell span { font-size: 11px; color: var(--text-2); }
+
+  .hangup-row { display: flex; justify-content: center; padding-bottom: 8px; }
+
+  .hangup {
+    width: 66px; height: 66px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--red);
+    color: #fff;
+    box-shadow: 0 10px 26px var(--red-soft);
+    transition: transform .1s, filter .16s;
+  }
+  .hangup:hover { filter: brightness(1.06); }
+  .hangup:active { transform: scale(.95); }
+
+  /* Hoja de teclado DTMF / transferencia */
+  .call-sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--surface-2);
+    border-top: 1px solid var(--border);
+    border-radius: 18px 18px 0 0;
+    padding: 14px 16px 18px;
+    transform: translateY(100%);
+    transition: transform .22s ease;
+    z-index: 6;
+    box-shadow: 0 -12px 30px rgba(0, 0, 0, .18);
+  }
+
+  .call-sheet.open { transform: none; }
+
+  .sheet-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .sheet-actions .save-btn { flex: 1; }
+
+  .transfer-pending {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--text-2);
+  }
+
+  .transfer-pending[hidden] { display: none; }
+
+  /* Cambio entre llamadas (espera) */
+  .call-switch {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 2px 8px 4px;
+  }
+
+  .call-switch[hidden] { display: none; }
+
+  .merge-row {
+    display: flex;
+    justify-content: center;
+    padding: 2px 8px 4px;
+  }
+
+  .merge-row .ghost { font-size: 12px; padding: 6px 12px; }
+
+  .call-chip {
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-2);
+    font-size: 11.5px;
+    font-weight: 600;
+    max-width: 46%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .call-chip.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-weight: 650;
+    font-size: 13px;
+  }
+
+  .sheet-head button {
+    color: var(--text-2);
+    font-size: 16px;
+    padding: 4px 8px;
+    border-radius: 8px;
+  }
+
+  .sheet-head button:hover { background: var(--surface-3); }
+
+  .dtmf-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .dtmf-grid button {
+    height: 46px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 17px;
+    font-weight: 600;
+    transition: background .12s, transform .08s;
+  }
+
+  .dtmf-grid button:hover { background: var(--surface-3); }
+  .dtmf-grid button:active { transform: scale(.97); }
+
+  #sheetTransfer .field { margin-bottom: 10px; }
+
+  /* Entrante */
+  .incoming {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 30px;
+    background:
+      radial-gradient(700px 420px at 50% 0%, var(--accent-soft), transparent 70%),
+      var(--surface);
+    text-align: center;
+  }
+
+  .incoming .avatar.big { width: 96px; height: 96px; font-size: 30px; margin-bottom: 16px; }
+  .incoming .name { font-size: 22px; font-weight: 650; letter-spacing: -.01em; }
+  .incoming .num { color: var(--text-2); font-size: 13.5px; margin-top: 2px; }
+  .incoming .label {
+    margin-top: 14px;
+    font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--text-3); font-weight: 650;
+  }
+
+  .incoming-actions { display: flex; gap: 70px; margin-top: 44px; }
+
+  .incoming-actions .cell { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .incoming-actions .round { width: 68px; height: 68px; }
+  .incoming-actions .cell span { font-size: 12px; color: var(--text-2); }
+
+  /* ============================================================
+     Navegación inferior
+     ============================================================ */
+  .app-nav {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    padding: 8px 12px 12px;
+    border-top: 1px solid var(--border);
+    background: var(--glass);
+    backdrop-filter: blur(18px);
+  }
+
+  .nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 0 6px;
+    border-radius: 12px;
+    color: var(--text-3);
+    font-size: 10.5px;
+    font-weight: 600;
+    transition: color .16s, background .16s;
+  }
+
+  .nav-btn svg { width: 21px; height: 21px; }
+  .nav-btn:hover { color: var(--text-2); background: var(--surface-2); }
+  .nav-btn.active { color: var(--accent); background: var(--accent-soft); }
+
+  /* ============================================================
+     Nota de prototipo
+     ============================================================ */
+  .stage-note {
+    width: min(960px, 100%);
+    text-align: center;
+    color: var(--text-3);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .stage-note b { color: var(--text-2); font-weight: 600; }
+  /* --- modo aplicacion: la ventana ES el telefono --- */
+  html, body { background: var(--surface); overflow: hidden; }
+  .stage { padding: 0; min-height: 100vh; gap: 0; display: block; }
+  .stage-head, .stage-note { display: none; }
+  .phone {
+    width: 100vw;
+    height: 100vh;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="stage-head">
+    <div class="brand"><span class="logo-tile"><img src="logo.svg" alt=""></span>MicroSIP <span>Modern · prototipo</span></div>
+    <div class="controls">
+      <div class="seg" id="themeSeg">
+        <button data-theme-set="system" class="active">Sistema</button>
+        <button data-theme-set="light">Claro</button>
+        <button data-theme-set="dark">Oscuro</button>
+      </div>
+      <button class="ghost" id="btnIncoming">Simular llamada entrante</button>
+    </div>
+  </div>
+
+  <div class="phone">
+    <!-- Cabecera -->
+    <header class="app-head">
+      <div class="avatar" title="MicroSIP Modern">
+        <img class="logo-mark" src="logo.svg" alt="MicroSIP Modern">
+      </div>
+      <div class="head-meta">
+        <div class="name">Nombre · Ext. 100</div>
+        <div class="status" id="headStatus"><span class="presence"></span> Registrado · UDP</div>
+      </div>
+      <div class="head-actions">
+        <button class="icon-btn" id="btnSearch" title="Buscar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </button>
+        <button class="icon-btn" id="btnMenu" title="Menú">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="head-menu" id="headMenu" hidden>
+          <button data-menu="settings">Ajustes</button>
+          <button data-menu="shortcuts">Atajos</button>
+          <button data-menu="exportConfig">Exportar configuración</button>
+          <button data-menu="importConfig">Importar configuración</button>
+          <button data-menu="alwaysOnTop" id="menuAlwaysOnTop">Siempre visible</button>
+          <button data-menu="messages">Mensajes</button>
+          <button data-menu="calls">Registros</button>
+          <button data-menu="contacts">Contactos</button>
+          <button data-menu="openLog">Ver log</button>
+          <button data-menu="website">Sitio web</button>
+          <button data-menu="about">Acerca de</button>
+          <button data-menu="quit" class="danger">Salir</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-body">
+      <!-- ===================== DIALER ===================== -->
+      <section class="view active" id="view-dialer">
+        <div class="dial-display">
+          <div class="dial-number" id="dialNumber">
+            <input class="dial-input" id="dialInput" type="text" inputmode="tel" placeholder="Marca un número" autocomplete="off" spellcheck="false">
+            <button class="backspace" id="backspace" title="Borrar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H9L3 12l6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1Z"/><path d="m17 9-6 6M11 9l6 6"/></svg>
+            </button>
+          </div>
+          <div class="dial-hint" id="dialHint"></div>
+          <div class="dial-menu" id="dialMenu" hidden>
+            <button data-clip="copy">Copiar</button>
+            <button data-clip="cut">Cortar</button>
+            <button data-clip="paste">Pegar</button>
+          </div>
+        </div>
+
+        <div class="dial-shortcuts" id="dialShortcuts" hidden></div>
+
+        <div class="keypad" id="keypad">
+          <button class="key" data-key="1"><span class="digit">1</span></button>
+          <button class="key" data-key="2"><span class="digit">2</span><span class="letters">ABC</span></button>
+          <button class="key" data-key="3"><span class="digit">3</span><span class="letters">DEF</span></button>
+          <button class="key" data-key="4"><span class="digit">4</span><span class="letters">GHI</span></button>
+          <button class="key" data-key="5"><span class="digit">5</span><span class="letters">JKL</span></button>
+          <button class="key" data-key="6"><span class="digit">6</span><span class="letters">MNO</span></button>
+          <button class="key" data-key="7"><span class="digit">7</span><span class="letters">PQRS</span></button>
+          <button class="key" data-key="8"><span class="digit">8</span><span class="letters">TUV</span></button>
+          <button class="key" data-key="9"><span class="digit">9</span><span class="letters">WXYZ</span></button>
+          <button class="key" data-key="*"><span class="digit">*</span></button>
+          <button class="key" data-key="0"><span class="digit">0</span><span class="letters">+</span></button>
+          <button class="key" data-key="#"><span class="digit">#</span></button>
+        </div>
+
+        <div class="quick-row">
+          <button class="chip" id="chipDnd" title="No molestar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-9.3-5"/><path d="M6 8a6 6 0 0 0 9.3 5"/><path d="M10.3 21h3.4"/><path d="m3 3 18 18"/></svg>
+            <span>No molestar</span>
+          </button>
+          <button class="chip" id="chipVoicemail" title="Buzón de voz" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
+            <span>Buzón</span>
+          </button>
+          <button class="chip rec" id="chipRec" title="Grabar llamada">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
+            <span>Grabar</span>
+          </button>
+          <button class="chip" id="chipMute" title="Silenciar micrófono">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/><path id="micSlash" d="m4 4 16 16" stroke-width="2.2" style="display:none"/></svg>
+            <span id="chipMuteLabel">Micrófono</span>
+          </button>
+        </div>
+
+        <div class="dial-actions">
+          <button class="side-action" title="Mensaje">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8Z"/></svg>
+          </button>
+          <button class="call-btn" id="btnCall" title="Llamar">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.2 1.1L6.6 10.8Z"/></svg>
+          </button>
+          <button class="side-action" title="Vídeo (no disponible en Lite)">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="6" width="12" height="12" rx="2"/><path d="m15 10 6-3v10l-6-3"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- ===================== LLAMADAS ===================== -->
+      <section class="view" id="view-calls">
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="callsSearch" placeholder="Buscar en el historial">
+        </div>
+
+        <div class="contact-tools">
+          <button class="ghost" id="callsExport">Exportar</button>
+          <button class="ghost" id="callsImport">Importar</button>
+          <button class="ghost" id="callsClear">Vaciar</button>
+        </div>
+
+        <div id="callsToday">
+          <div class="row" data-call="Ana Torres">
+            <div class="avatar sm">AT</div>
+            <div class="row-main">
+              <div class="row-title">Ana Torres</div>
+              <div class="row-sub"><span class="badge-missed">Perdida</span> · 10:42</div>
+            </div>
+            <div class="row-meta">
+              <button class="row-call" title="Llamar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.2 1.1L6.6 10.8Z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="row" data-call="Soporte Nivel 2">
+            <div class="avatar sm">SN</div>
+            <div class="row-main">
+              <div class="row-title">Soporte Nivel 2</div>
+              <div class="row-sub">Saliente · 09:15 · 4 min</div>
+            </div>
+            <div class="row-meta">
+              <button class="row-call" title="Llamar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.2 1.1L6.6 10.8Z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="callsYesterday">
+          <div class="row" data-call="Luis Martín">
+            <div class="avatar sm">LM</div>
+            <div class="row-main">
+              <div class="row-title">Luis Martín</div>
+              <div class="row-sub">Entrante · 18:20 · 12 min</div>
+            </div>
+            <div class="row-meta">
+              <button class="row-call" title="Llamar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.2 1.1L6.6 10.8Z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="row" data-call="Recepción">
+            <div class="avatar sm">RE</div>
+            <div class="row-main">
+              <div class="row-title">Recepción</div>
+              <div class="row-sub"><span class="badge-missed">Perdida</span> · 12:03</div>
+            </div>
+            <div class="row-meta">
+              <button class="row-call" title="Llamar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.2 1.1L6.6 10.8Z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== CONTACTOS ===================== -->
+      <section class="view" id="view-contacts">
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="contactsSearch" placeholder="Buscar contacto">
+        </div>
+
+        <div class="contact-tools">
+          <button class="ghost" id="contactNew">+ Nuevo contacto</button>
+          <button class="ghost" id="contactsExport">Exportar</button>
+          <button class="ghost" id="contactsImport">Importar</button>
+        </div>
+
+        <div class="contact-form" id="contactForm" hidden>
+          <input class="field" id="contactName" placeholder="Nombre" autocomplete="off">
+          <input class="field" id="contactNumber" placeholder="Número" inputmode="tel" autocomplete="off">
+          <input class="field" id="contactInfo" placeholder="Información" autocomplete="off">
+          <label class="check"><input type="checkbox" id="contactPresence"> Suscribir presencia</label>
+          <div class="sheet-actions">
+            <button class="save-btn ghost" id="contactDelete" hidden>Eliminar</button>
+            <button class="save-btn" id="contactSave">Guardar</button>
+          </div>
+        </div>
+
+        <div class="list-label">Favoritos</div>
+        <div id="contactsList">
+          <div class="row" data-call="Ana Torres">
+            <div class="avatar sm">AT</div>
+            <div class="row-main">
+              <div class="row-title"><span class="star">★</span> Ana Torres</div>
+              <div class="row-sub"><span class="presence"></span> En línea · 204</div>
+            </div>
+            <div class="row-meta">
+              <button class="row-call" title="Llamar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.2 1.1L6.6 10.8Z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="row" data-call="Soporte Nivel 2">
+            <div class="avatar sm">SN</div>
+            <div class="row-main">
+              <div class="row-title"><span class="star">★</span> Soporte Nivel 2</div>
+              <div class="row-sub"><span class="presence" style="background:var(--amber);box-shadow:0 0 0 3px rgba(217,119,6,.16)"></span> Ausente · 210</div>
+            </div>
+            <div class="row-meta">
+              <button class="row-call" title="Llamar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.2 1.1L6.6 10.8Z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="row" data-call="Luis Martín">
+            <div class="avatar sm">LM</div>
+            <div class="row-main">
+              <div class="row-title">Luis Martín</div>
+              <div class="row-sub"><span class="presence" style="background:var(--text-3);box-shadow:none"></span> Desconectado · 215</div>
+            </div>
+            <div class="row-meta">
+              <button class="row-call" title="Llamar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.2 1.1L6.6 10.8Z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="row" data-call="Recepción">
+            <div class="avatar sm">RE</div>
+            <div class="row-main">
+              <div class="row-title">Recepción</div>
+              <div class="row-sub"><span class="presence"></span> En línea · 100</div>
+            </div>
+            <div class="row-meta">
+              <button class="row-call" title="Llamar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.2 1.1L6.6 10.8Z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== MENSAJES ===================== -->
+      <section class="view" id="view-messages">
+        <div class="msg-head">
+          <button class="mini-btn" id="msgBack" title="Volver" hidden>←</button>
+          <input class="field" id="msgPeer" placeholder="Número o extensión" inputmode="tel" autocomplete="off">
+          <button class="mini-btn" id="msgOpen" title="Abrir conversación">→</button>
+        </div>
+
+        <div id="msgList" class="msg-list"></div>
+
+        <div id="msgChat" class="msg-chat" hidden>
+          <div id="msgThread" class="msg-thread"></div>
+          <div class="msg-compose">
+            <input class="field" id="msgBody" placeholder="Escribe un mensaje" autocomplete="off">
+            <button class="save-btn" id="msgSend">Enviar</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== BUSCAR ===================== -->
+      <section class="view" id="view-search">
+        <div class="search-head">
+          <button class="mini-btn" id="searchClose" title="Volver">←</button>
+          <input class="field" id="searchInput" placeholder="Buscar contactos, llamadas o mensajes" autocomplete="off">
+        </div>
+        <div id="searchResults"></div>
+      </section>
+
+      <!-- ===================== ATAJOS ===================== -->
+      <section class="view" id="view-shortcuts">
+        <div class="settings-title">Atajos de marcación</div>
+        <div class="settings-group">
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8l7-5 7 5v8l-7 5-7-5V8Z"/></svg>
+            </div>
+            <div class="txt"><b>Etiqueta</b>
+              <input class="field" id="shortcutLabel" placeholder="Soporte" autocomplete="off" spellcheck="false">
+            </div>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.2 1.1L6.6 10.8Z"/></svg>
+            </div>
+            <div class="txt"><b>Número</b>
+              <input class="field" id="shortcutNumber" placeholder="204" inputmode="tel" autocomplete="off">
+            </div>
+          </div>
+        </div>
+
+        <div class="shortcut-actions">
+          <button class="save-btn" id="shortcutSave">Añadir atajo</button>
+          <button class="save-btn ghost" id="shortcutCancel" hidden>Cancelar</button>
+        </div>
+
+        <div class="list-label">Marcación rápida</div>
+        <div id="shortcutsList"></div>
+      </section>
+
+      <!-- ===================== AJUSTES ===================== -->
+      <section class="view" id="view-settings">
+        <div class="settings-tabs" id="settingsTabs">
+          <button data-block="apariencia" class="active">Apariencia</button>
+          <button data-block="cuenta">Cuenta</button>
+          <button data-block="audio">Audio</button>
+          <button data-block="red">Red</button>
+          <button data-block="general">General</button>
+          <button data-block="llamadas">Llamadas</button>
+        </div>
+
+        <div class="settings-block active" data-block="apariencia">
+        <div class="settings-title">Apariencia</div>
+        <div class="settings-group">
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg>
+            </div>
+            <div class="txt"><b>Modo de color</b><span>Sistema, claro u oscuro</span></div>
+            <div class="theme-pick" id="themePick">
+              <button data-theme-set="system" class="active">Sistema</button>
+              <button data-theme-set="light">Claro</button>
+              <button data-theme-set="dark">Oscuro</button>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a9 9 0 1 0 0 18c1.7 0 2.5-1 2.5-2s-.8-2-.8-3c0-1 .8-1.5 1.8-1.5H18a3 3 0 0 0 3-3c0-4.4-4-8.5-9-8.5Z"/><circle cx="7.5" cy="11" r="1"/><circle cx="11" cy="7.5" r="1"/><circle cx="15.5" cy="9" r="1"/></svg>
+            </div>
+            <div class="txt"><b>Color de acento</b><span id="accentLabel">Rojo MicroSIP</span></div>
+            <div class="swatches">
+              <button class="swatch active" data-accent="red" style="background:#c60c30" title="Rojo MicroSIP" aria-label="Rojo MicroSIP"></button>
+              <button class="swatch" data-accent="green" style="background:#1f9d55" title="Verde" aria-label="Verde"></button>
+              <button class="swatch" data-accent="blue" style="background:#2563eb" title="Azul" aria-label="Azul"></button>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <div class="settings-block" data-block="cuenta">
+        <div class="settings-title">Cuenta SIP</div>
+        <div class="settings-group">
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            </div>
+            <div class="txt">
+              <b>Cuenta activa</b>
+              <select class="field" id="accountSelect"></select>
+            </div>
+            <button class="mini-btn" id="accNew" title="Añadir cuenta">+</button>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+            </div>
+            <div class="txt">
+              <b>Servidor</b>
+              <input class="field" id="accServer" placeholder="sip.miempresa.com" spellcheck="false" autocomplete="off">
+            </div>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
+            </div>
+            <div class="txt">
+              <b>Usuario</b>
+              <input class="field" id="accUser" placeholder="204" spellcheck="false" autocomplete="off">
+            </div>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+            </div>
+            <div class="txt">
+              <b>Contraseña</b>
+              <input class="field" id="accPass" type="password" placeholder="••••••••" autocomplete="new-password">
+              <div class="field-note" id="accPassNote" hidden>MicroSIP cifra la contraseña; escríbela una vez y pulsa Guardar y registrar.</div>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h10M4 17h7"/></svg>
+            </div>
+            <div class="txt">
+              <b>Nombre visible</b>
+              <input class="field" id="accName" placeholder="Nombre" spellcheck="false" autocomplete="off">
+            </div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>Dominio</b><input class="field" id="accDomain" placeholder="dominio SIP" spellcheck="false" autocomplete="off"></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>Proxy</b><input class="field" id="accProxy" placeholder="sip:proxy:5060" spellcheck="false" autocomplete="off"></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>Auth ID</b><input class="field" id="accAuthId" placeholder="usuario de autenticación" spellcheck="false" autocomplete="off"></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>Prefijo de marcación</b><input class="field" id="accPrefix" placeholder="p. ej. 9" spellcheck="false" autocomplete="off"></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>Plan de marcación</b><input class="field" id="accDialPlan" placeholder="reglas de marcación" spellcheck="false" autocomplete="off"></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>Ocultar Caller ID</b>
+              <select class="field" id="accHideCid">
+                <option value="">Desactivado</option>
+                <option value="soft">Soft</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>Buzón de voz</b><input class="field" id="accVoicemail" placeholder="número de buzón" spellcheck="false" autocomplete="off"></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>Transporte</b>
+              <select class="field" id="accTransport">
+                <option value="udp">UDP</option>
+                <option value="tcp">TCP</option>
+              </select>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>SRTP</b>
+              <select class="field" id="accSrtp">
+                <option value="">Desactivado</option>
+                <option value="optional">Opcional</option>
+                <option value="mandatory">Obligatorio</option>
+              </select>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>Dirección pública</b><input class="field" id="accPublicAddr" placeholder="IP pública (NAT)" spellcheck="false" autocomplete="off"></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>Registro cada (s)</b><input class="field" id="accRegisterRefresh" type="number" min="30" max="3600" placeholder="300"></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>Keepalive (s)</b><input class="field" id="accKeepAlive" type="number" min="0" max="3600" placeholder="15"></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8l7-5 7 5v8l-7 5-7-5V8Z"/></svg></div>
+            <div class="txt"><b>ICE</b><span>Conectividad NAT</span></div>
+            <button class="switch" id="accIce" data-account-switch="ice"></button>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8l7-5 7 5v8l-7 5-7-5V8Z"/></svg></div>
+            <div class="txt"><b>Permitir rewrite</b><span>Reescribe Contact/Via</span></div>
+            <button class="switch" id="accRewrite" data-account-switch="allowRewrite"></button>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8l7-5 7 5v8l-7 5-7-5V8Z"/></svg></div>
+            <div class="txt"><b>Session timer</b><span>Desactivar temporizador</span></div>
+            <button class="switch" id="accSessionTimer" data-account-switch="disableSessionTimer"></button>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8l7-5 7 5v8l-7 5-7-5V8Z"/></svg></div>
+            <div class="txt"><b>Publicar presencia</b><span>PUBLISH al servidor</span></div>
+            <button class="switch" id="accPublish" data-account-switch="publish"></button>
+          </div>
+          <div class="setting" style="border-bottom:0">
+            <button class="save-btn" id="accSave">Guardar y registrar</button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="setting" style="border-bottom:0;display:block">
+            <button class="ghost-btn" id="accImport">Importar cuentas de MicroSIP</button>
+            <div class="config-path" id="configPath"></div>
+          </div>
+        </div>
+        </div>
+
+        <div class="settings-block" data-block="audio">
+        <div class="settings-title">Audio</div>
+        <div class="settings-group">
+          <div class="setting audio">
+            <button class="ico as-btn" id="btnMuteOut" title="Silenciar salida">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10v4a1 1 0 0 0 1 1h2l4 4V5L6 9H4a1 1 0 0 0-1 1Z"/><path d="M16 8a5 5 0 0 1 0 8"/></svg>
+            </button>
+            <div class="txt">
+              <b>Volumen de salida</b>
+              <div class="slider-line">
+                <input type="range" id="volOut" min="0" max="100" value="80" aria-label="Volumen de salida">
+                <span class="val" id="volOutVal">80%</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting audio">
+            <button class="ico as-btn" id="btnMuteIn" title="Silenciar micrófono">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+            </button>
+            <div class="txt">
+              <b>Volumen del micrófono</b>
+              <div class="slider-line">
+                <input type="range" id="volIn" min="0" max="100" value="60" aria-label="Volumen del micrófono">
+                <span class="val" id="volInVal">60%</span>
+              </div>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></div>
+            <div class="txt"><b>Micrófono</b>
+              <select class="field" id="audIn"></select>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10v4a1 1 0 0 0 1 1h2l4 4V5L6 9H4a1 1 0 0 0-1 1Z"/><path d="M16 8a5 5 0 0 1 0 8"/></svg></div>
+            <div class="txt"><b>Altavoces</b>
+              <select class="field" id="audOut"></select>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8l7-5 7 5v8l-7 5-7-5V8Z"/></svg></div>
+            <div class="txt"><b>Cancelación de eco</b><span>Se aplica al reiniciar</span></div>
+            <button class="switch" id="audEc" data-setting="ec" data-kind="bool"></button>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8l7-5 7 5v8l-7 5-7-5V8Z"/></svg></div>
+            <div class="txt"><b>Detección de voz (VAD)</b><span>Se aplica al reiniciar</span></div>
+            <button class="switch" id="audVad" data-setting="vad" data-kind="bool"></button>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8a5 5 0 0 1 0 8"/></svg></div>
+            <div class="txt"><b>Tono al marcar</b><span>DTMF local al pulsar las teclas</span></div>
+            <button class="switch" id="audLocalDtmf" data-setting="localDTMF" data-kind="bool"></button>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>Códecs habilitados</b><input class="field" id="audCodecs" placeholder="PCMU/8000/1,PCMA/8000/1" spellcheck="false" autocomplete="off"></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8l7-5 7 5v8l-7 5-7-5V8Z"/></svg></div>
+            <div class="txt"><b>Forzar códec</b><select class="field" id="audForce"><option value="">Automático</option></select></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg></div>
+            <div class="txt"><b>Método DTMF</b><select class="field" id="audDtmf"><option value="rfc2833">RFC 2833</option><option value="sipinfo">SIP INFO</option></select></div>
+          </div>
+        </div>
+        </div>
+
+        <div class="settings-block" data-block="red">
+        <div class="settings-title">Red</div>
+        <div class="settings-group">
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div>
+            <div class="txt"><b>Puerto local</b><input class="field" id="netSourcePort" type="number" min="0" max="65535" placeholder="0 (aleatorio)"></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div>
+            <div class="txt"><b>STUN</b><input class="field" id="netStun" placeholder="stun.servidor.com" spellcheck="false" autocomplete="off"></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8l7-5 7 5v8l-7 5-7-5V8Z"/></svg></div>
+            <div class="txt"><b>Usar STUN</b><span>Se aplica al reiniciar</span></div>
+            <button class="switch" id="netEnableStun" data-setting="enableSTUN" data-kind="bool"></button>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>RTP mínimo</b><input class="field" id="netRtpMin" type="number" min="0" max="65535" placeholder="0"></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>RTP máximo</b><input class="field" id="netRtpMax" type="number" min="0" max="65535" placeholder="0"></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div>
+            <div class="txt"><b>DNS SRV</b><input class="field" id="netDnsSrv" placeholder="8.8.8.8;1.1.1.1" spellcheck="false" autocomplete="off"></div>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div>
+            <div class="txt"><b>Nivel de log</b>
+              <select class="field" id="netLogLevel">
+                <option value="0">0 · silencio</option>
+                <option value="1">1 · errores</option>
+                <option value="2">2 · info</option>
+                <option value="3">3 · detalle</option>
+                <option value="4">4 · debug</option>
+                <option value="5">5 · trace</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <div class="settings-block" data-block="general">
+        <div class="settings-title">General</div>
+        <div class="settings-group">
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8"/></svg></div>
+            <div class="txt"><b>Iniciar minimizado</b><span>Al abrir la aplicación</span></div>
+            <button class="switch" id="genMinimized" data-setting="startMinimized" data-kind="bool"></button>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9z"/></svg></div>
+            <div class="txt"><b>Instancia única</b><span>No abrir dos copias</span></div>
+            <button class="switch" id="genSingle" data-setting="singleInstance" data-kind="bool"></button>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M5 8l7-5 7 5v8l-7 5-7-5V8Z"/></svg></div>
+            <div class="txt"><b>Siempre visible</b><span>Mantener la ventana encima del resto</span></div>
+            <button class="switch" id="genAlwaysOnTop" data-setting="alwaysOnTop" data-kind="bool"></button>
+          </div>
+          <div class="setting">
+            <div class="ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/></svg></div>
+            <div class="txt"><b>Idioma</b>
+              <select class="field" id="langSelect">
+                <option value="system">Sistema</option>
+                <option value="es">Español</option>
+                <option value="en">English</option>
+                <option value="ca">Català</option>
+                <option value="pt">Português</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <div class="settings-block" data-block="llamadas">
+        <div class="settings-title">Llamadas</div>
+        <div class="settings-group">
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.2 1.1L6.6 10.8Z"/></svg>
+            </div>
+            <div class="txt"><b>No molestar</b><span>Rechaza llamadas entrantes</span></div>
+            <button class="switch" id="switchDnd"></button>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z"/></svg>
+            </div>
+            <div class="txt"><b>Contestar automáticamente</b><span>Responde las llamadas entrantes</span></div>
+            <button class="switch" id="setAutoAnswer" data-setting="autoAnswer" data-kind="bool"></button>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V6l10-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/></svg>
+            </div>
+            <div class="txt"><b>Timbre</b><span>ringtone.wav junto a la aplicación</span></div>
+            <button class="test-btn" id="btnTestRing" title="Probar timbre">Probar</button>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8a5 5 0 0 1 0 8"/></svg>
+            </div>
+            <div class="txt">
+              <b>Volumen del timbre</b>
+              <input type="range" id="ringVol" min="0" max="100" value="100">
+            </div>
+            <span class="val" id="ringVolVal">100%</span>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8a5 5 0 0 1 0 8"/><path d="M19 5v14"/></svg>
+            </div>
+            <div class="txt"><b>Dispositivo de timbre</b><select class="field" id="setRingDevice"><option value="">Predeterminado</option></select></div>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M17 14l4 4M21 14l-4 4"/></svg>
+            </div>
+            <div class="txt"><b>Llamada en espera</b><span>Permite una segunda llamada</span></div>
+            <button class="switch" id="setCallWaiting" data-setting="callWaiting" data-kind="bool"></button>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10v4a1 1 0 0 0 1 1h2l4 4V5L6 9H4a1 1 0 0 0-1 1Z"/><path d="M16 8a5 5 0 0 1 0 8"/></svg>
+            </div>
+            <div class="txt"><b>Auriculares Jabra</b><span>SDK oficial · busylight activa</span></div>
+            <button class="switch" id="setJabra" data-setting="jabraIntegration" data-kind="bool"></button>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+            </div>
+            <div class="txt"><b>Botón del auricular USB</b><span>Contesta, silencia y cuelga con el botón central</span></div>
+            <button class="switch" id="setHidHeadset" data-setting="hidHeadset" data-kind="bool"></button>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+            </div>
+            <div class="txt"><b>Estado de Microsoft Teams</b><span>Ocupado durante la llamada</span></div>
+            <button class="switch" id="setTeamsPresence" data-setting="teamsPresence" data-kind="bool"></button>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+            </div>
+            <div class="txt"><b>Notificación de llamada</b><span>Aviso con Contestar y Colgar si la app no está delante</span></div>
+            <button class="switch" id="setCallToast" data-setting="callToast" data-kind="bool"></button>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M15 3v6h6"/></svg>
+            </div>
+            <div class="txt"><b>Posición del aviso</b>
+              <select class="field" id="setToastPosition">
+                <option value="topright">Arriba a la derecha</option>
+                <option value="topleft">Arriba a la izquierda</option>
+                <option value="bottomright">Abajo a la derecha</option>
+                <option value="bottomleft">Abajo a la izquierda</option>
+              </select>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h12M12 7l5 5-5 5"/><path d="M20 5v14"/></svg>
+            </div>
+            <div class="txt"><b>Desviar llamadas a</b><input class="field" id="setForwardNumber" placeholder="Número o extensión" spellcheck="false" autocomplete="off"></div>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z"/><path d="M15 4h5v5"/></svg>
+            </div>
+            <div class="txt"><b>Desvío activo</b><span>Redirige todas las llamadas</span></div>
+            <button class="switch" id="setForwarding" data-setting="forwarding" data-kind="bool"></button>
+          </div>
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16v12H4z"/><path d="m8 12 3 3 5-5"/></svg>
+            </div>
+            <div class="txt"><b>Código de recogida</b><input class="field" id="setFeatureCodeCP" placeholder="**" spellcheck="false" autocomplete="off"></div>
+          </div>
+        </div>
+        </div>
+
+        <div class="settings-block" data-block="general">
+        <div class="settings-title">Cuenta</div>
+        <div class="settings-group">
+          <div class="setting">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
+            </div>
+            <div class="txt"><b id="genAccName">Cuenta</b><span id="genAccMeta">Sin cuenta configurada</span></div>
+          </div>
+          <div class="setting">
+            <div class="ico brand-ico">
+              <img src="logo.svg" alt="MicroSIP Modern">
+            </div>
+            <div class="txt"><b>MicroSIP Modern</b><span>Versión 1.0.0 · GPL v2</span></div>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <!-- ===================== EN LLAMADA ===================== -->
+      <section class="view overlay" id="view-incall">
+        <div class="incall">
+          <div class="who">
+            <div class="avatar big" id="incallAvatar">AT</div>
+            <div class="name" id="incallName">Ana Torres</div>
+            <div class="num" id="incallNum">Ext. 100</div>
+          </div>
+          <div class="state">En llamada</div>
+          <div class="timer" id="callTimer">00:00</div>
+          <div class="rec-wrap"><div class="rec-pill" id="recPill"><span class="dot"></span> Grabando</div></div>
+          <div class="call-switch" id="callSwitch" hidden></div>
+          <div class="merge-row"><button class="ghost" id="btnMerge" hidden>Unir en conferencia</button></div>
+
+          <div class="call-grid">
+            <div class="cell">
+              <button class="round" id="btnMute" title="Silenciar">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+              </button>
+              <span>Silenciar</span>
+            </div>
+            <div class="cell">
+              <button class="round" id="btnKeypad" title="Teclado">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="1.4"/><circle cx="12" cy="6" r="1.4"/><circle cx="18" cy="6" r="1.4"/><circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/><circle cx="6" cy="18" r="1.4"/><circle cx="12" cy="18" r="1.4"/><circle cx="18" cy="18" r="1.4"/></svg>
+              </button>
+              <span>Teclado</span>
+            </div>
+            <div class="cell">
+              <button class="round" id="btnCallMuteOut" title="Silenciar salida">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10v4a1 1 0 0 0 1 1h2l4 4V5L6 9H4a1 1 0 0 0-1 1Z"/><path d="M16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14"/></svg>
+              </button>
+              <span id="btnCallMuteOutLabel">Audio</span>
+            </div>
+            <div class="cell">
+              <button class="round" id="btnHold" title="Retener">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 5v14M15 5v14"/></svg>
+              </button>
+              <span>Retener</span>
+            </div>
+            <div class="cell">
+              <button class="round" id="btnTransfer" title="Transferir">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h14M13 7l5 5-5 5"/></svg>
+              </button>
+              <span>Transferir</span>
+            </div>
+            <div class="cell">
+              <button class="round" id="btnAddCall" title="Añadir a conferencia">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+              <span>Añadir</span>
+            </div>
+          </div>
+
+          <div class="hangup-row">
+            <button class="hangup" id="btnHangup" title="Colgar">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-2.4 0-4.7.5-6.7 1.4-.5.2-.8.7-.8 1.2v2.6c0 .6.5 1.1 1.1 1.1.4 0 .8-.2 1-.5l1.3-1.9c.2-.3.5-.4.8-.4.5 0 1 .1 1.5.2.3.1.5.3.5.6v3.2c0 .5.4.9.9.9h.8c.5 0 .9-.4.9-.9v-3.2c0-.3.2-.5.5-.6.5-.1 1-.2 1.5-.2.3 0 .6.1.8.4l1.3 1.9c.2.3.6.5 1 .5.6 0 1.1-.5 1.1-1.1v-2.6c0-.5-.3-1-.8-1.2A20.6 20.6 0 0 0 12 9Z"/></svg>
+            </button>
+          </div>
+
+          <div class="call-sheet" id="callSheet">
+            <div class="sheet-head">
+              <span id="sheetTitle">Teclado</span>
+              <button id="sheetClose" title="Cerrar">✕</button>
+            </div>
+            <div id="sheetKeypad">
+              <div class="dtmf-grid">
+                <button data-dtmf="1">1</button>
+                <button data-dtmf="2">2</button>
+                <button data-dtmf="3">3</button>
+                <button data-dtmf="4">4</button>
+                <button data-dtmf="5">5</button>
+                <button data-dtmf="6">6</button>
+                <button data-dtmf="7">7</button>
+                <button data-dtmf="8">8</button>
+                <button data-dtmf="9">9</button>
+                <button data-dtmf="*">*</button>
+                <button data-dtmf="0">0</button>
+                <button data-dtmf="#">#</button>
+              </div>
+            </div>
+            <div id="sheetTransfer" hidden>
+              <input class="field" id="transferNumber" placeholder="Número o extensión" inputmode="tel">
+              <div class="sheet-actions">
+                <button class="save-btn ghost" id="transferBlind">Ciega</button>
+                <button class="save-btn" id="transferAttended">Con consulta</button>
+              </div>
+            </div>
+            <div id="sheetAdd" hidden>
+              <input class="field" id="addCallNumber" placeholder="Número o extensión" inputmode="tel">
+              <button class="save-btn" id="addCallGo">Añadir a la conferencia</button>
+            </div>
+            <div id="transferPending" class="transfer-pending" hidden>
+              <span>Consulta en curso</span>
+              <div class="sheet-actions">
+                <button class="save-btn ghost" id="transferCancel">Cancelar</button>
+                <button class="save-btn" id="transferComplete">Completar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== ENTRANTE ===================== -->
+      <section class="view overlay" id="view-incoming">
+        <div class="incoming">
+          <div class="avatar big">LM</div>
+          <div class="name">Luis Martín</div>
+          <div class="num">Ext. 103 · sip.miempresa.com</div>
+          <div class="label">Llamada entrante</div>
+
+          <div class="incoming-actions">
+            <div class="cell">
+              <button class="round danger" id="btnDecline" title="Rechazar">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-2.4 0-4.7.5-6.7 1.4-.5.2-.8.7-.8 1.2v2.6c0 .6.5 1.1 1.1 1.1.4 0 .8-.2 1-.5l1.3-1.9c.2-.3.5-.4.8-.4.5 0 1 .1 1.5.2.3.1.5.3.5.6v3.2c0 .5.4.9.9.9h.8c.5 0 .9-.4.9-.9v-3.2c0-.3.2-.5.5-.6.5-.1 1-.2 1.5-.2.3 0 .6.1.8.4l1.3 1.9c.2.3.6.5 1 .5.6 0 1.1-.5 1.1-1.1v-2.6c0-.5-.3-1-.8-1.2A20.6 20.6 0 0 0 12 9Z"/></svg>
+              </button>
+              <span>Rechazar</span>
+            </div>
+            <div class="cell">
+              <button class="round" style="background:var(--green);border-color:transparent;color:#fff" id="btnAnswer" title="Contestar">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.2 1.1L6.6 10.8Z"/></svg>
+              </button>
+              <span>Contestar</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== ACERCA DE ===================== -->
+      <section class="view overlay" id="view-about">
+        <div class="about">
+          <div class="about-logo"><img src="logo.svg" alt="MicroSIP Modern"></div>
+          <div class="about-name">MicroSIP Modern</div>
+          <div class="about-ver">Versión 1.0.0 · GPL v2</div>
+          <p class="about-note">Interfaz WebView2 sobre el motor C++ de MicroSIP (pjsua), con integración de auriculares Jabra.</p>
+          <button class="save-btn" id="aboutClose">Cerrar</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Navegación -->
+    <nav class="app-nav">
+      <button class="nav-btn active" data-view="dialer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="6" cy="6" r="1.3"/><circle cx="12" cy="6" r="1.3"/><circle cx="18" cy="6" r="1.3"/><circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/><circle cx="6" cy="18" r="1.3"/><circle cx="12" cy="18" r="1.3"/><circle cx="18" cy="18" r="1.3"/></svg>
+        Teclado
+      </button>
+      <button class="nav-btn" data-view="calls">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        Registros
+      </button>
+      <button class="nav-btn" data-view="contacts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
+        Contactos
+      </button>
+      <button class="nav-btn" data-view="messages">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-4-.9L3 21l1.9-4.6a8.4 8.4 0 0 1-1-4A8.4 8.4 0 0 1 12 4a8.4 8.4 0 0 1 9 7.5Z"/></svg>
+        Mensajes
+      </button>
+      <button class="nav-btn" data-view="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"/></svg>
+        Ajustes
+      </button>
+    </nav>
+  </div>
+
+  <div class="stage-note">
+    Prototipo visual navegable · <b>WebView2 + HTML/CSS/JS</b> sobre el motor C++ de MicroSIP.<br>
+    Prueba el teclado, las pestañas, el modo claro/oscuro y la llamada entrante.
+  </div>
+</div>
+
+<script src="lang.js?v=4"></script>
+<script src="app.js?v=30"></script>
+</body>
+</html>

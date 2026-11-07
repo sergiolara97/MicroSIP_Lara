@@ -1,0 +1,8 @@
+JabraBridge
+Copyright (c) 2026 los autores de este repositorio
+
+Este producto incluye el SDK de Jabra (`Jabra.NET.Sdk`, Jabra Device Connector
+y módulos asociados), Copyright (c) GN Audio A/S, bajo licencia Apache-2.0.
+
+El texto de la licencia está en `../../LICENSES/Apache-2.0.txt` y el detalle de
+terceros en `../../THIRD-PARTY-NOTICES.md`.

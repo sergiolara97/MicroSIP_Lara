@@ -1,0 +1,52 @@
+# Build artifacts
+[Bb]in/
+[Oo]bj/
+*.obj
+*.pdb
+*.ilk
+*.idb
+*.res
+*.aps
+*.sbr
+*.bsc
+*.user
+.vs/
+Debug/
+Release/
+*.7z
+
+# OS
+Thumbs.db
+desktop.ini
+
+# Arbol de compilacion (lo descarga/crea build-microsip.ps1)
+pjproject-2.15.1/
+*.zip
+
+# SDK de WebView2 (lo descarga build-modern.ps1)
+webview2-sdk/
+*.nupkg
+
+# Artefactos de ejecucion de la app moderna
+webview-data/
+*.log
+history.tsv
+messages.tsv
+microsip.ini
+recordings/
+microsip-modern.ini
+
+# Estado generado al ejecutar los paquetes de dist/ (no publicar)
+dist/**/*.db
+dist/**/Contacts.xml
+dist/**/*.tsv
+dist/**/microsip.ini
+dist/**/recordings/
+dist/**/webview-data/
+dist/**/*.log
+
+# Binarios del Device Connector de Jabra para otras plataformas:
+# el puente es Windows (net472) y no los usa.
+dist/**/DeviceConnector/darwin/
+dist/**/DeviceConnector/linux/
+

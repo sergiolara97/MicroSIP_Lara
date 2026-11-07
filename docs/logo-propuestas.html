@@ -1,0 +1,665 @@
+?<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logo MicroSIP Modern · propuestas</title>
+<style>
+  :root {
+    --accent: #c60c30;
+    --accent-hover: #a90a28;
+    --accent-light: #e2465f;
+    --accent-rgb: 198, 12, 48;
+    --accent-soft: rgba(198, 12, 48, .12);
+
+    --green: #1f9d55;
+    --bg: #f2f3f5;
+    --surface: #ffffff;
+    --surface-2: #f7f8fa;
+    --surface-3: #eceef1;
+    --text: #16181d;
+    --text-2: #5c6370;
+    --text-3: #8b93a1;
+    --border: rgba(16, 20, 30, .10);
+    --border-strong: rgba(16, 20, 30, .16);
+    --shadow-sm: 0 1px 2px rgba(10, 14, 25, .06), 0 4px 14px rgba(10, 14, 25, .06);
+    --shadow-lg: 0 24px 70px rgba(10, 14, 25, .16), 0 2px 8px rgba(10, 14, 25, .08);
+    --code-bg: #f4f6f8;
+  }
+
+  html[data-theme="dark"] {
+    --bg: #0e1013;
+    --surface: #171a1f;
+    --surface-2: #1d2127;
+    --surface-3: #262b33;
+    --text: #f2f4f7;
+    --text-2: #a4adba;
+    --text-3: #6f7885;
+    --border: rgba(255, 255, 255, .09);
+    --border-strong: rgba(255, 255, 255, .16);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .28);
+    --shadow-lg: 0 30px 90px rgba(0, 0, 0, .6), 0 2px 10px rgba(0, 0, 0, .45);
+    --accent-soft: rgba(198, 12, 48, .22);
+    --code-bg: #14171c;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background:
+      radial-gradient(1100px 620px at 12% -12%, rgba(var(--accent-rgb), .14), transparent 60%),
+      radial-gradient(900px 600px at 92% 108%, rgba(70, 90, 140, .16), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font: 14px/1.55 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 34px 22px 90px;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
+
+  /* ---------- cabecera ---------- */
+  .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11.5px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .eyebrow::before {
+    content: ""; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft);
+  }
+  h1 { margin: 8px 0 6px; font-size: 30px; line-height: 1.15; letter-spacing: -.03em; font-weight: 680; }
+  .sub { margin: 0; color: var(--text-2); font-size: 14.5px; max-width: 62ch; }
+
+  .seg {
+    display: flex; padding: 3px; gap: 2px; flex: 0 0 auto;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px;
+    box-shadow: var(--shadow-sm);
+  }
+  .seg button {
+    padding: 7px 14px; border-radius: 999px; border: 0; background: none; cursor: pointer;
+    font: inherit; font-size: 12.5px; font-weight: 600; color: var(--text-2);
+    transition: background .16s, color .16s;
+  }
+  .seg button.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
+
+  /* ---------- tarjetas ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+  }
+  h2 { margin: 0 0 4px; font-size: 18px; letter-spacing: -.02em; font-weight: 660; }
+  h3 { margin: 0; font-size: 16px; letter-spacing: -.01em; font-weight: 660; }
+  .muted { color: var(--text-2); }
+  .small { font-size: 12.5px; }
+  .tiny { font-size: 11.5px; letter-spacing: .01em; }
+
+  .avatar-demo {
+    width: 38px; height: 38px; border-radius: 12px;
+    background: linear-gradient(140deg, var(--accent-light), var(--accent));
+    display: grid; place-items: center; color: #fff;
+    box-shadow: 0 4px 12px rgba(var(--accent-rgb), .28);
+    flex: 0 0 auto;
+  }
+
+  /* ---------- estado actual ---------- */
+  .now { display: grid; grid-template-columns: 190px 1fr; gap: 26px; align-items: start; }
+  .now-stage {
+    display: grid; place-items: center; gap: 14px;
+    padding: 22px; border-radius: 18px;
+    background:
+      radial-gradient(120px 120px at 30% 10%, rgba(var(--accent-rgb), .10), transparent 70%),
+      var(--surface-2);
+    border: 1px solid var(--border);
+  }
+  .issues { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .issues li { position: relative; padding-left: 22px; color: var(--text-2); font-size: 13.5px; }
+  .issues li::before {
+    content: ""; position: absolute; left: 4px; top: .62em;
+    width: 7px; height: 7px; border-radius: 2px; background: var(--accent); opacity: .55;
+  }
+  .issues b { color: var(--text); font-weight: 620; }
+
+  /* ---------- propuesta ---------- */
+  .prop { display: flex; flex-direction: column; gap: 18px; }
+  .prop-head { display: flex; align-items: center; gap: 14px; }
+  .num {
+    width: 34px; height: 34px; border-radius: 11px; flex: 0 0 auto;
+    display: grid; place-items: center;
+    background: var(--accent-soft); color: var(--accent);
+    font-weight: 700; font-size: 13px; letter-spacing: .02em;
+  }
+  .tag {
+    margin-left: auto; font-size: 11.5px; font-weight: 650; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--text-3);
+    border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px;
+  }
+
+  .prop-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; align-items: stretch; }
+
+  .hero {
+    display: grid; place-items: center; align-content: center; gap: 18px;
+    padding: 26px 18px; border-radius: 18px;
+    background: var(--surface-2); border: 1px solid var(--border);
+  }
+  .hero .big {
+    width: 104px; height: 104px; border-radius: 28px;
+    background: linear-gradient(140deg, var(--accent-light), var(--accent));
+    display: grid; place-items: center; color: #fff;
+    box-shadow: 0 16px 40px rgba(var(--accent-rgb), .30);
+  }
+  .scale-row { display: flex; align-items: flex-end; gap: 16px; color: var(--accent); }
+  html[data-theme="dark"] .scale-row { color: #f2f4f7; }
+  .scale-row figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .scale-row figcaption { font-size: 10.5px; color: var(--text-3); letter-spacing: .02em; }
+
+  /* cabecera de la app reproducida a tamaño real */
+  .mock-head {
+    width: 100%; display: flex; align-items: center; gap: 10px;
+    padding: 9px 11px; border-radius: 14px;
+    background: var(--surface); border: 1px solid var(--border);
+  }
+  .mock-head .mh-meta { flex: 1; min-width: 0; }
+  .mock-head .mh-name { font-size: 12.5px; font-weight: 650; letter-spacing: -.01em; }
+  .mock-head .mh-status {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 10.5px; color: var(--text-2); margin-top: 1px;
+  }
+  .mock-head .presence {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 0 2px rgba(31, 157, 85, .18);
+  }
+  .mock-head .mh-icons { display: flex; gap: 2px; color: var(--text-2); }
+
+  .lockup { display: flex; align-items: center; gap: 10px; }
+  .lockup .wm { font-size: 17px; font-weight: 680; letter-spacing: -.02em; }
+  .lockup .wm span { font-weight: 500; color: var(--text-3); font-size: 13px; letter-spacing: 0; }
+
+  .pros { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .pros li { position: relative; padding-left: 22px; font-size: 13px; color: var(--text-2); }
+  .pros li::before {
+    position: absolute; left: 0; top: 0; font-weight: 700; font-size: 13px;
+  }
+  .pros li.up::before { content: "+"; color: var(--green); }
+  .pros li.down::before { content: "−"; color: var(--accent); }
+
+  pre {
+    margin: 0; padding: 12px 14px; border-radius: 12px;
+    background: var(--code-bg); border: 1px solid var(--border);
+    font: 11.5px/1.6 "Cascadia Mono", "Consolas", monospace;
+    color: var(--text-2); overflow-x: auto; white-space: pre;
+  }
+  pre b { color: var(--accent); font-weight: 600; }
+
+  /* ---------- tabla ---------- */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 11px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  th { font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--text-3); font-weight: 650; }
+  td:first-child, th:first-child { padding-left: 0; }
+  tr:last-child td { border-bottom: 0; }
+  .bar { display: flex; gap: 3px; }
+  .bar i { width: 14px; height: 6px; border-radius: 999px; background: var(--surface-3); }
+  .bar i[data-on] { background: var(--accent); }
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 650; letter-spacing: .02em;
+    background: var(--accent-soft); color: var(--accent);
+  }
+  .pill.neutral { background: var(--surface-3); color: var(--text-2); }
+
+  /* ---------- implementación ---------- */
+  .files { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+  .file {
+    display: flex; flex-direction: column; gap: 3px;
+    padding: 12px 14px; border-radius: 12px;
+    background: var(--surface-2); border: 1px solid var(--border);
+  }
+  .file code { font: 12px/1.4 "Cascadia Mono", "Consolas", monospace; color: var(--text); }
+  .file span { font-size: 12px; color: var(--text-2); }
+
+  .note {
+    margin-top: 16px; padding: 14px 16px; border-radius: 14px;
+    background: var(--accent-soft); border: 1px solid rgba(var(--accent-rgb), .22);
+    font-size: 13px; color: var(--text-2);
+  }
+  .note b { color: var(--text); }
+
+  .decision { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+  .decision div {
+    padding: 14px 16px; border-radius: 14px; background: var(--surface-2);
+    border: 1px solid var(--border); font-size: 13px; color: var(--text-2);
+  }
+  .decision div b { display: block; color: var(--text); font-weight: 650; margin-bottom: 3px; }
+
+  @media (max-width: 880px) {
+    .now, .prop-body, .files, .decision { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- máscaras compartidas por las previsualizaciones -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <mask id="mk-bubble" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+      <rect width="32" height="32" fill="#000"/>
+      <path fill="#fff" d="M9.5 3.5h13A5.5 5.5 0 0 1 28 9v9.5a5.5 5.5 0 0 1-5.5 5.5H17l5.2 5.5-10.4-5.5h-2.3A5.5 5.5 0 0 1 3 18.5V9a5.5 5.5 0 0 1 5.5-5.5Z"/>
+      <g transform="translate(7.9 6.2) scale(0.66)" fill="#000" stroke="#000" stroke-width="1"
+         stroke-linejoin="round" stroke-linecap="round">
+        <path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.85 21 3 13.15 3 3.5a1 1 0 0 1 1-1H7.5a1 1 0 0 1 1 1c0 1.24.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2Z"/>
+      </g>
+    </mask>
+    <mask id="mk-sello" maskUnits="userSpaceOnUse" x="0" y="0" width="32" height="32">
+      <rect width="32" height="32" fill="#000"/>
+      <path fill="#fff" d="M8.6 2h14.8A6.6 6.6 0 0 1 30 8.6v14.8a6.6 6.6 0 0 1-6.6 6.6H8.6A6.6 6.6 0 0 1 2 23.4V8.6A6.6 6.6 0 0 1 8.6 2Z"/>
+      <g transform="translate(7.9 7.9) scale(0.68)" fill="#000">
+        <path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.85 21 3 13.15 3 3.5a1 1 0 0 1 1-1H7.5a1 1 0 0 1 1 1c0 1.24.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2Z"/>
+      </g>
+    </mask>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <div class="eyebrow">MicroSIP Modern · identidad</div>
+      <h1>Rediseño del logo: 4 propuestas</h1>
+      <p class="sub">Nada está tocado. Esto es una maqueta de evaluación: mismo tamaño real (23&nbsp;px dentro del avatar de 38&nbsp;px), en tema claro y oscuro, a 16/24/32/64 px y con el código listo para copiar. Elige una y la implemento.</p>
+      <p class="sub" style="margin-top:8px"><b>Decisión:</b> se implementó la <b>1 · Línea</b> en el avatar, Ajustes, «Acerca de», el favicon y el <code>.ico</code> de las dos apps.</p>
+    </div>
+    <div class="seg" id="themeSeg">
+      <button data-theme-set="light" class="active">Claro</button>
+      <button data-theme-set="dark">Oscuro</button>
+    </div>
+  </header>
+
+  <!-- ============ ESTADO ACTUAL ============ -->
+  <section class="card now">
+    <div class="now-stage">
+      <div class="avatar-demo" style="width:76px;height:76px;border-radius:22px">
+        <svg viewBox="0 0 24 24" width="46" height="46" role="img" aria-label="MicroSIP Modern">
+          <path fill="#fff" d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.85 21 3 13.15 3 3.5a1 1 0 0 1 1-1H7.5a1 1 0 0 1 1 1c0 1.24.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2Z"/>
+          <path fill="none" stroke="#fff" stroke-opacity=".62" stroke-width="1.5" stroke-linecap="round" d="M15.2 4.2a5.2 5.2 0 0 1 4.6 4.6"/>
+        </svg>
+      </div>
+      <div class="scale-row">
+        <figure>
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.85 21 3 13.15 3 3.5a1 1 0 0 1 1-1H7.5a1 1 0 0 1 1 1c0 1.24.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2Z"/><path fill="none" stroke="currentColor" stroke-opacity=".62" stroke-width="1.5" stroke-linecap="round" d="M15.2 4.2a5.2 5.2 0 0 1 4.6 4.6"/></svg>
+          <figcaption>32</figcaption>
+        </figure>
+        <figure>
+          <svg viewBox="0 0 24 24" width="23" height="23" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.85 21 3 13.15 3 3.5a1 1 0 0 1 1-1H7.5a1 1 0 0 1 1 1c0 1.24.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2Z"/><path fill="none" stroke="currentColor" stroke-opacity=".62" stroke-width="1.5" stroke-linecap="round" d="M15.2 4.2a5.2 5.2 0 0 1 4.6 4.6"/></svg>
+          <figcaption>23 · real</figcaption>
+        </figure>
+        <figure>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.85 21 3 13.15 3 3.5a1 1 0 0 1 1-1H7.5a1 1 0 0 1 1 1c0 1.24.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2Z"/></svg>
+          <figcaption>16</figcaption>
+        </figure>
+      </div>
+      <div class="tiny" style="color:var(--text-3);text-align:center">logo.svg actual</div>
+    </div>
+
+    <div>
+      <h2>Qué le pasa al logo de hoy</h2>
+      <p class="small muted" style="margin:0">Es el glifo <i>call</i> de Material Design con un arco suelto arriba a la derecha. Funciona, pero no distingue: es el icono de «llamar» que usa cualquier app.</p>
+      <ul class="issues">
+        <li><b>No es marca, es pictograma.</b> Cualquier app de telefonía tiene este auricular; nada dice «MicroSIP».</li>
+        <li><b>El arco está mal encajado.</b> Flota sin alineación óptica; a 16 px el hueco se cierra y queda una mancha.</li>
+        <li><b>Peso descentrado.</b> El dibujo carga abajo-izquierda dentro del cuadrado: se ve torcido al lado del texto.</li>
+        <li><b>Color fijo (<code>#fff</code>).</b> Solo existe sobre fondo de acento: no hay versión para superficie clara ni monocroma para el <code>.ico</code>.</li>
+        <li><b>Choca con el icono de la app.</b> La ventana y la barra de tareas siguen mostrando el disco azul brillante de MicroSIP clásico: dos identidades a la vez.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ PROPUESTA 1 ============ -->
+  <section class="card prop">
+    <div class="prop-head">
+      <div class="num">1</div>
+      <div>
+        <h3>Línea</h3>
+        <div class="small muted">Auricular monolineal, trazo uniforme de 2,9 px, esquinas redondeadas.</div>
+      </div>
+      <div class="tag">Menor riesgo</div>
+    </div>
+
+    <div class="prop-body">
+      <div class="hero">
+        <div class="big">
+          <svg viewBox="0 0 32 32" width="64" height="64" fill="none" stroke="#fff" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round" aria-label="Propuesta 1">
+            <g transform="translate(4 4)"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></g>
+          </svg>
+        </div>
+        <div class="lockup">
+          <div class="avatar-demo">
+            <svg viewBox="0 0 32 32" width="23" height="23" fill="none" stroke="#fff" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round">
+              <g transform="translate(4 4)"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></g>
+            </svg>
+          </div>
+          <div class="wm">MicroSIP <span>Modern</span></div>
+        </div>
+        <div class="scale-row">
+          <figure><svg viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.9" stroke-linejoin="round" stroke-linecap="round"><g transform="translate(4 4)"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></g></svg><figcaption>16</figcaption></figure>
+          <figure><svg viewBox="0 0 32 32" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.9" stroke-linejoin="round" stroke-linecap="round"><g transform="translate(4 4)"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></g></svg><figcaption>24</figcaption></figure>
+          <figure><svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.9" stroke-linejoin="round" stroke-linecap="round"><g transform="translate(4 4)"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></g></svg><figcaption>32</figcaption></figure>
+          <figure><svg viewBox="0 0 32 32" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2.9" stroke-linejoin="round" stroke-linecap="round"><g transform="translate(4 4)"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></g></svg><figcaption>48</figcaption></figure>
+        </div>
+      </div>
+
+      <div>
+        <ul class="pros">
+          <li class="up">Es el único que habla el mismo idioma que el resto de iconos de la interfaz (buscar, menú, ajustes son de trazo). El logo deja de ser un cuerpo extraño.</li>
+          <li class="up">Legible hasta 16 px; sirve igual para el avatar, la barra de tareas y el <code>.ico</code>.</li>
+          <li class="up">Se recolorea con <code>currentColor</code>: blanco sobre acento, rojo sobre superficie clara, negro en el llavero.</li>
+          <li class="down">Sigue siendo «un teléfono»: gana coherencia, no personalidad.</li>
+          <li class="down">Muy cerca del icono de llamada estándar; nadie dirá «ese es MicroSIP».</li>
+        </ul>
+        <pre style="margin-top:14px">&lt;svg viewBox="0 0 32 32" fill="none"
+     stroke="currentColor" stroke-width="2.9"
+     stroke-linecap="round" stroke-linejoin="round"&gt;
+  &lt;g transform="translate(4 4)"&gt;
+    <b>&lt;path d="M22 16.92v3a2 2 0 0 1-2.18 2 …" /&gt;</b>
+  &lt;/g&gt;
+&lt;/svg&gt;</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROPUESTA 2 ============ -->
+  <section class="card prop">
+    <div class="prop-head">
+      <div class="num">2</div>
+      <div>
+        <h3>Burbuja de voz</h3>
+        <div class="small muted">Burbuja sólida con el auricular en negativo. Habla de llamada y de mensaje.</div>
+      </div>
+      <div class="tag">Mi recomendación</div>
+    </div>
+
+    <div class="prop-body">
+      <div class="hero">
+        <div class="big">
+          <svg viewBox="0 0 32 32" width="66" height="66" aria-label="Propuesta 2">
+            <rect width="32" height="32" fill="#fff" mask="url(#mk-bubble)"/>
+          </svg>
+        </div>
+        <div class="lockup">
+          <div class="avatar-demo">
+            <svg viewBox="0 0 32 32" width="23" height="23"><rect width="32" height="32" fill="#fff" mask="url(#mk-bubble)"/></svg>
+          </div>
+          <div class="wm">MicroSIP <span>Modern</span></div>
+        </div>
+        <div class="scale-row">
+          <figure><svg viewBox="0 0 32 32" width="16" height="16"><rect width="32" height="32" fill="currentColor" mask="url(#mk-bubble)"/></svg><figcaption>16</figcaption></figure>
+          <figure><svg viewBox="0 0 32 32" width="24" height="24"><rect width="32" height="32" fill="currentColor" mask="url(#mk-bubble)"/></svg><figcaption>24</figcaption></figure>
+          <figure><svg viewBox="0 0 32 32" width="32" height="32"><rect width="32" height="32" fill="currentColor" mask="url(#mk-bubble)"/></svg><figcaption>32</figcaption></figure>
+          <figure><svg viewBox="0 0 32 32" width="48" height="48"><rect width="32" height="32" fill="currentColor" mask="url(#mk-bubble)"/></svg><figcaption>48</figcaption></figure>
+        </div>
+      </div>
+
+      <div>
+        <ul class="pros">
+          <li class="up">Silueta propia y reconocible: burbuja + rabo. Nadie más la tiene con un auricular dentro.</li>
+          <li class="up">Cuenta lo que la app hace de verdad: llamadas <i>y</i> mensajería (pestaña Mensajes, <code>pjsua_im_send</code>).</li>
+          <li class="up">El hueco del auricular se lee como negativo de la marca: sobre acento en blanco, sobre blanco en acento.</li>
+          <li class="up">Aguanta 16 px porque la forma exterior es un bloque macizo, no líneas finas.</li>
+          <li class="down">El hueco exige máscara (o <code>fill-rule="evenodd"</code>) en vez de un simple relleno.</li>
+          <li class="down">En un avatar cuadrado y pequeño puede leerse como «chat» antes que «llamada»; se arregla con el auricular algo más grande.</li>
+        </ul>
+        <pre style="margin-top:14px">&lt;svg viewBox="0 0 32 32"&gt;
+  &lt;mask id="burbuja"&gt;
+    &lt;rect width="32" height="32" fill="#000"/&gt;
+    <b>&lt;path d="M9.5 3.5h13A5.5 5.5 0 0 1 28 9v9.5…" /&gt;</b>   &lt;!-- burbuja --&gt;
+    <b>&lt;g transform="translate(7.9 6.2) scale(0.66)" fill="#000"&gt;</b> &lt;!-- hueco --&gt;
+      &lt;path d="M6.62 10.79a15.05…" /&gt;
+    &lt;/g&gt;
+  &lt;/mask&gt;
+  &lt;rect width="32" height="32" fill="currentColor" mask="url(#burbuja)"/&gt;
+&lt;/svg&gt;</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROPUESTA 3 ============ -->
+  <section class="card prop">
+    <div class="prop-head">
+      <div class="num">3</div>
+      <div>
+        <h3>Monograma M</h3>
+        <div class="small muted">La inicial como marca: trazo continuo de 5 px que arranca y termina en la línea base del sonido.</div>
+      </div>
+      <div class="tag">Más atrevida</div>
+    </div>
+
+    <div class="prop-body">
+      <div class="hero">
+        <div class="big">
+          <svg viewBox="0 0 32 32" width="62" height="62" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" aria-label="Propuesta 3">
+            <path d="M6 25.5V9.5l10 9 10-9v16"/>
+          </svg>
+        </div>
+        <div class="lockup">
+          <div class="avatar-demo">
+            <svg viewBox="0 0 32 32" width="23" height="23" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 25.5V9.5l10 9 10-9v16"/></svg>
+          </div>
+          <div class="wm">MicroSIP <span>Modern</span></div>
+        </div>
+        <div class="scale-row">
+          <figure><svg viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 25.5V9.5l10 9 10-9v16"/></svg><figcaption>16</figcaption></figure>
+          <figure><svg viewBox="0 0 32 32" width="24" height="24" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 25.5V9.5l10 9 10-9v16"/></svg><figcaption>24</figcaption></figure>
+          <figure><svg viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 25.5V9.5l10 9 10-9v16"/></svg><figcaption>32</figcaption></figure>
+          <figure><svg viewBox="0 0 32 32" width="48" height="48" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 25.5V9.5l10 9 10-9v16"/></svg><figcaption>48</figcaption></figure>
+        </div>
+      </div>
+
+      <div>
+        <ul class="pros">
+          <li class="up">Máximo contraste y presencia: es el que mejor se ve en una barra de tareas llena de iconos.</li>
+          <li class="up">Es el único que construye marca (se lee «MicroSIP») en vez de describir el producto.</li>
+          <li class="up">Una sola <code>path</code>, sin máscaras ni capas: trivial de mantener y de rasterizar.</li>
+          <li class="down">Ya no dice «teléfono»: la app se reconocería por el texto, no por el icono.</li>
+          <li class="down">Compite con el nombre en la cabecera («M» + «MicroSIP» repiten la inicial).</li>
+          <li class="down">Si algún día hay otra «M» de por medio, el monograma pierde fuerza.</li>
+        </ul>
+        <pre style="margin-top:14px">&lt;svg viewBox="0 0 32 32" fill="none" stroke="currentColor"
+     stroke-width="5" stroke-linecap="round"
+     stroke-linejoin="round"&gt;
+  <b>&lt;path d="M6 25.5V9.5l10 9 10-9v16" /&gt;</b>
+&lt;/svg&gt;</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROPUESTA 4 ============ -->
+  <section class="card prop">
+    <div class="prop-head">
+      <div class="num">4</div>
+      <div>
+        <h3>Sello</h3>
+        <div class="small muted">Auricular en negativo dentro de un cuadrado redondeado: pensado como icono de aplicación.</div>
+      </div>
+      <div class="tag">Para el .ico</div>
+    </div>
+
+    <div class="prop-body">
+      <div class="hero">
+        <div class="big">
+          <svg viewBox="0 0 32 32" width="76" height="76" aria-label="Propuesta 4">
+            <rect width="32" height="32" fill="#fff" mask="url(#mk-sello)"/>
+          </svg>
+        </div>
+        <div class="lockup">
+          <div class="avatar-demo">
+            <svg viewBox="0 0 32 32" width="23" height="23"><rect width="32" height="32" fill="#fff" mask="url(#mk-sello)"/></svg>
+          </div>
+          <div class="wm">MicroSIP <span>Modern</span></div>
+        </div>
+        <div class="scale-row">
+          <figure><svg viewBox="0 0 32 32" width="16" height="16"><rect width="32" height="32" fill="currentColor" mask="url(#mk-sello)"/></svg><figcaption>16</figcaption></figure>
+          <figure><svg viewBox="0 0 32 32" width="24" height="24"><rect width="32" height="32" fill="currentColor" mask="url(#mk-sello)"/></svg><figcaption>24</figcaption></figure>
+          <figure><svg viewBox="0 0 32 32" width="32" height="32"><rect width="32" height="32" fill="currentColor" mask="url(#mk-sello)"/></svg><figcaption>32</figcaption></figure>
+          <figure><svg viewBox="0 0 32 32" width="48" height="48"><rect width="32" height="32" fill="currentColor" mask="url(#mk-sello)"/></svg><figcaption>48</figcaption></figure>
+        </div>
+      </div>
+
+      <div>
+        <ul class="pros">
+          <li class="up">Resuelve el problema real: hoy la ventana muestra un disco azul de 2010 y la app un auricular blanco. Este unifica.</li>
+          <li class="up">Relleno macizo = legible a 16 px en la barra de tareas y en el Explorador.</li>
+          <li class="up">Se genera en todos los tamaños del <code>.ico</code> (16→256) desde un único SVG.</li>
+          <li class="down">Como logotipo en la cabecera no aporta nada: duplicaría el cuadrado del avatar.</li>
+          <li class="down">Necesita máscara, y el hueco se ensucia por debajo de 20 px si el auricular no se agranda.</li>
+        </ul>
+        <pre style="margin-top:14px">&lt;svg viewBox="0 0 32 32"&gt;
+  &lt;mask id="sello"&gt;
+    &lt;rect width="32" height="32" fill="#000"/&gt;
+    <b>&lt;path d="M8.6 2h14.8A6.6 6.6 0 0 1 30 8.6v14.8…" /&gt;</b>
+    &lt;g transform="translate(7.9 7.9) scale(0.68)" fill="#000"&gt;…&lt;/g&gt;
+  &lt;/mask&gt;
+  &lt;rect width="32" height="32" fill="currentColor" mask="url(#sello)"/&gt;
+&lt;/svg&gt;</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COMPARATIVA ============ -->
+  <section class="card">
+    <h2>Comparativa</h2>
+    <p class="small muted" style="margin:0 0 8px">Puntuación de 1 a 5. «16 px» pesa más de lo que parece: es el tamaño del <code>.ico</code> y el de la barra de tareas.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Propuesta</th>
+          <th>Legible a 16 px</th>
+          <th>Personalidad</th>
+          <th>Dice «teléfono»</th>
+          <th>Coherencia con la UI</th>
+          <th>Esfuerzo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>1 · Línea</b></td>
+          <td><span class="bar"><i data-on></i><i data-on></i><i data-on></i><i data-on></i><i></i></span></td>
+          <td><span class="bar"><i data-on></i><i data-on></i><i></i><i></i><i></i></span></td>
+          <td><span class="bar"><i data-on></i><i data-on></i><i data-on></i><i data-on></i><i data-on></i></span></td>
+          <td><span class="bar"><i data-on></i><i data-on></i><i data-on></i><i data-on></i><i data-on></i></span></td>
+          <td><span class="pill neutral">Bajo</span></td>
+        </tr>
+        <tr>
+          <td><b>2 · Burbuja</b> <span class="pill">recomendada</span></td>
+          <td><span class="bar"><i data-on></i><i data-on></i><i data-on></i><i data-on></i><i data-on></i></span></td>
+          <td><span class="bar"><i data-on></i><i data-on></i><i data-on></i><i data-on></i><i></i></span></td>
+          <td><span class="bar"><i data-on></i><i data-on></i><i data-on></i><i data-on></i><i></i></span></td>
+          <td><span class="bar"><i data-on></i><i data-on></i><i data-on></i><i data-on></i><i></i></span></td>
+          <td><span class="pill neutral">Medio</span></td>
+        </tr>
+        <tr>
+          <td><b>3 · Monograma M</b></td>
+          <td><span class="bar"><i data-on></i><i data-on></i><i data-on></i><i data-on></i><i data-on></i></span></td>
+          <td><span class="bar"><i data-on></i><i data-on></i><i data-on></i><i data-on></i><i></i></span></td>
+          <td><span class="bar"><i></i><i></i><i></i><i></i><i></i></span></td>
+          <td><span class="bar"><i data-on></i><i data-on></i><i data-on></i><i></i><i></i></span></td>
+          <td><span class="pill neutral">Bajo</span></td>
+        </tr>
+        <tr>
+          <td><b>4 · Sello</b></td>
+          <td><span class="bar"><i data-on></i><i data-on></i><i data-on></i><i data-on></i><i></i></span></td>
+          <td><span class="bar"><i data-on></i><i data-on></i><i data-on></i><i></i><i></i></span></td>
+          <td><span class="bar"><i data-on></i><i data-on></i><i data-on></i><i data-on></i><i data-on></i></span></td>
+          <td><span class="bar"><i data-on></i><i data-on></i><i data-on></i><i data-on></i><i></i></span></td>
+          <td><span class="pill neutral">Medio</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note">
+      <b>Ruta que yo elegiría:</b> <b>2 · Burbuja</b> como logotipo (avatar, cabecera, «Acerca de») y <b>4 · Sello</b> como icono de la aplicación, derivado de la misma burbuja. Si prefieres no arriesgar, la <b>1</b> es la que se integra sin que nadie note el cambio... y la <b>3</b> es la única que, dentro de dos años, se reconocería sin leer el nombre.
+    </div>
+  </section>
+
+  <!-- ============ IMPLEMENTACIÓN ============ -->
+  <section class="card">
+    <h2>Qué se tocaría al implementar</h2>
+    <p class="small muted" style="margin:0">Ninguno de estos archivos se ha modificado todavía.</p>
+    <div class="files">
+      <div class="file">
+        <code>MicroSIP-Modern/host/web/logo.svg</code>
+        <span>Marca de la cabecera. Se sustituye el <code>&lt;path&gt;</code> y se pasa a <code>currentColor</code> para que herede el acento.</span>
+      </div>
+      <div class="file">
+        <code>MicroSIP-Modern/host/microsip.ico</code>
+        <span>Multi-resolución 16/24/32/48/64/128/256 generado desde el SVG elegido.</span>
+      </div>
+      <div class="file">
+        <code>MicroSIP-Modern/host/app.rc</code>
+        <span>Sin cambios si el <code>.ico</code> conserva el nombre (<code>101 ICON "microsip.ico"</code>).</span>
+      </div>
+      <div class="file">
+        <code>MicroSIP-Modern/host/web/index.html</code>
+        <span>Solo si el logo pasa a heredar el acento: <code>.logo-mark</code> a <code>currentColor</code> y un <code>aria-label</code>.</span>
+      </div>
+      <div class="file">
+        <code>dist/MicroSIP-Modern/web/logo.svg</code>
+        <span>Copia generada por <code>build-modern.ps1</code>. No se edita: se regenera al compilar.</span>
+      </div>
+      <div class="file">
+        <code>docs/logo-propuestas/*.svg</code>
+        <span>Los cuatro candidatos ya están guardados aquí, listos para copiar tal cual.</span>
+      </div>
+    </div>
+    <div class="note">
+      <b>Aviso:</b> <code>microsip.ico</code> está versionado en git, así que recompilar/regenerar el icono ensucia el árbol de trabajo. Se hará en el mismo commit del cambio, no aparte.
+    </div>
+  </section>
+
+  <!-- ============ DECISIÓN ============ -->
+  <section class="card">
+    <h2>Para decidir</h2>
+    <div class="decision">
+      <div><b>¿Marca o producto?</b> Si el icono debe decir «aquí se llama» → 1 o 2. Si debe decir «esto es MicroSIP» → 3.</div>
+      <div><b>¿Unificado o solo cabecera?</b> Puedo cambiar solo <code>logo.svg</code>, o también el <code>.ico</code> para que la barra de tareas deje de ser azul.</div>
+      <div><b>¿Color?</b> El logo puede quedarse blanco sobre el acento (como hoy) o pasar a <code>currentColor</code> y seguir el ajuste rojo/verde/azul.</div>
+      <div><b>¿Lockup?</b> Si quieres, además del símbolo preparo la versión horizontal marca + «MicroSIP Modern» para el «Acerca de».</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const html = document.documentElement;
+  const setTheme = (name) => {
+    html.dataset.theme = name;
+    document.querySelectorAll('#themeSeg button').forEach((o) => o.classList.toggle('active', o.dataset.themeSet === name));
+  };
+  document.querySelectorAll('#themeSeg button').forEach((b) => {
+    b.addEventListener('click', () => setTheme(b.dataset.themeSet));
+  });
+  // ?tema=oscuro abre directamente en oscuro (util para capturas).
+  const q = new URLSearchParams(location.search).get('tema');
+  if (q === 'oscuro' || q === 'dark') setTheme('dark');
+
+  // Reproduce la cabecera real de la app con la marca de cada propuesta,
+  // reutilizando el SVG del lockup (mismo tamano: 23 px).
+  const icoSearch = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+  const icoMenu = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+  document.querySelectorAll('.hero').forEach((hero) => {
+    const mark = hero.querySelector('.lockup .avatar-demo svg');
+    if (!mark) return;
+    const head = document.createElement('div');
+    head.className = 'mock-head';
+    head.innerHTML =
+      '<div class="avatar-demo">' + mark.outerHTML + '</div>' +
+      '<div class="mh-meta">' +
+        '<div class="mh-name">Nombre &middot; Ext. 100</div>' +
+        '<div class="mh-status"><span class="presence"></span>Registrado &middot; UDP</div>' +
+      '</div>' +
+      '<div class="mh-icons">' + icoSearch + icoMenu + '</div>';
+    hero.appendChild(head);
+  });
+</script>
+</body>
+</html>

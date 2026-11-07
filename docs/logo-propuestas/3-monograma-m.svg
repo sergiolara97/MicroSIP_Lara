@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="MicroSIP Modern">
+  <!-- Propuesta 3 "Monograma M". Un solo trazo, sin mascaras.
+       Para uso sobre el acento, cambia #c60c30 por #fff. -->
+  <path fill="none" stroke="#c60c30" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" d="M6 25.5V9.5l10 9 10-9v16"/>
+</svg>

@@ -1,0 +1,673 @@
+﻿Language Pack
+Last-Modified-Using: http://www.microsip.org/translation
+Language: Spanish
+Locale: 0x40a
+RTL: 0
+
+; utf8
+
+[Call]
+Llamar
+[End Call]
+Finalizar llamada
+[Contacts]
+Contactos
+[Account]
+Cuenta
+[Settings]
+Ajustes
+[Visit Website]
+Visitar Sitio Web de MicroSIP
+[Exit]
+Salir
+[Browse...]
+Examinar...
+[Default]
+Predeterminado
+[Auto Answer]
+Autorespuesta
+[Disable Local Account]
+Deshabilitar cuenta local
+[OK]
+OK
+[Save]
+Guardar
+[Cancel]
+Cancelar
+[SIP Server]
+Servidor SIP
+[SIP Proxy]
+Proxy SIP
+[Domain]
+Dominio
+[Password]
+Contraseña
+[Connecting...]
+Conectando...
+[Online]
+En línea
+[Local]
+Local
+[Message]
+Mensaje
+[Edit]
+Editar
+[Delete]
+Borrar
+[Add]
+Añadir
+[Bad Gateway]
+Puerta de enlace incorrecta
+[Request Timeout]
+Tiempo de espera agotado
+[Number]
+Número
+[Name]
+Nombre
+[Contact]
+Contacto
+[Incoming Call]
+Llamada entrante
+[Answer]
+Contestar
+[Decline]
+Rechazar
+[Calling]
+Llamando
+[Connecting]
+Conectando
+[Connected]
+Conectado
+[Auto]
+Automático
+[Transport]
+Transporte
+[Incorrect Password]
+Contraseña incorrecta
+[Public Address]
+Dirección Pública
+[Media Encryption]
+Cifrado de Medios
+[Disabled]
+Deshabilitado
+[Optional]
+Opcional
+[Mandatory]
+Obligatorio
+[STUN Server]
+Servidor STUN
+[Presence Subscription]
+Suscripción de Presencia
+[Ringing]
+Sonando
+[Call ended]
+Llamada Terminada
+[Declined]
+Rechazado
+[No address found]
+Dirección no Encontrada
+[Request Terminated]
+Solicitud Finalizada
+[Away]
+Ausente
+[Publish Presence]
+Publicar Presencia
+[Session Progress]
+Progreso de Sesión
+[Camera]
+Cámara
+[Video Call]
+Videollamada
+[Answer with Video]
+Contestar con vídeo
+[View Log File]
+Ver archivo de Registro
+[Microphone]
+Micrófono
+[Speaker]
+Altavoz
+[Video Codec]
+Códec de Vídeo
+[Check for Updates]
+Buscar Actualizaciones
+[Daily]
+Diario
+[Weekly]
+Semanal
+[Monthly]
+Mensual
+[Quarterly]
+Trimestral
+[Never]
+Nunca
+[Update Available]
+Actualización Disponible
+[Invalid Number]
+Número Inválido
+[Offline]
+Desconectado
+[Single Call Mode]
+Modo de Llamada Única
+[Local Video]
+Vídeo Local
+[Call Transfer]
+Transf. de Llamada
+[Call transfered successfully, disconnecting call]
+Llamada transferida con éxito, desconectando la llamada
+[Hold]
+Poner en espera
+[Transfer]
+Transferir
+[Sound Events]
+Eventos con Sonido
+[Bitrate]
+Bitrate
+[Login]
+Inicio de Sesión
+[Enable Log File]
+Habilitar Fichero de Registro
+[Duration]
+Duración
+[Information]
+Información
+[display password]
+Mostrar Contraseña
+[From]
+Desde
+[To]
+Para
+[Ring Device]
+Dispositivo de llamada
+[Service Unavailable]
+Servicio no Disponible
+[Busy Here]
+Destino Ocupado
+[Trying]
+Intentando Conectar
+[Method Not Allowed]
+Método no Admitido
+[Not Found]
+No Encontrado
+[Always on Top]
+Siempre Visible
+[Connect]
+Conectar
+[Last Call]
+Última llamada
+[Close All]
+Cerrar Todo
+[Copy]
+Copiar
+[Select All]
+Seleccionar Todo
+[Display Name]
+Nombre para Mostrar
+[Remember Details]
+Recordar Datos
+[No]
+No
+[All Calls]
+Todas las llamadas
+[SIP Header]
+Encabezado SIP
+[Different User]
+Usuario Diferente
+[Different Domain]
+Dominio Diferente
+[Different User or Domain]
+Usuario o Dominio Diferente
+[Different Remote Domain]
+Dominio Remoto Diferente
+[Deny Incoming]
+Rechazar llamadas Entrantes
+[Allow IP Rewrite]
+Permitir Reescritura de IP
+[Directory of Users]
+Directorio de Usuarios
+[Call on remote hold]
+Llamada puesta en espera en remoto
+[Call on local hold]
+Llamada puesta en espera en local
+[Call on hold]
+La Llamada está en espera
+[Call active]
+La llamada está activa
+[Force Codec for Incoming]
+Forzar Códec en llamadas Entrantes
+[Menu]
+Menú
+[Edit Account]
+Editar Cuenta
+[Add Account...]
+Añadir Cuenta...
+[Delete Account]
+Borrar Cuenta
+[Make Active]
+Poner en Activo
+[Are you sure you want to remove?]
+¿Estás seguro de que quieres eliminar?
+[Call Pickup]
+Captura de Llamada
+[Speaker Level]
+Nivel de Altavoz
+[Microphone Level]
+Nivel de Micrófono
+[Mute Speaker]
+Silenciar Altavoz
+[Mute Microphone]
+Silenciar Micrófono
+[Please fill out at least the required fields marked with *.]
+Por favor, rellene al menos los campos obligatorios marcados con *.
+[Ask your SIP provider how to configure the account correctly.]
+Pregunta a tu proveedor de SIP cómo configurar la cuenta correctamente.
+[Time]
+Hora
+[Phone]
+Teléfono
+[Ringtone]
+Sonido del Timbre
+[Username]
+Nombre de Usuario
+[Do you want to update now?]
+¿Quieres Actualizar Ahora?
+[Available Codecs]
+Códecs Disponibles
+[Enabled Codecs]
+Códecs Activados
+[Logs]
+Registros
+[Random Popup Position]
+Posición Aleatoria del Popup
+[Attended Transfer]
+Transf. con Consulta
+[Enable Local Account]
+Habilitar Cuenta Local
+[Send Crash Report]
+Enviar informe de Errores
+[Account Name]
+Nombre de Cuenta
+[Invite to Conference]
+Invitar a la Conferencia
+[Merge]
+Combinar
+[Separate]
+Separar
+[Disconnect]
+Desconectar
+[DTMF Method]
+Método DTMF
+[Voicemail Number]
+Núm. Buzón de Voz
+[Disable Session Timers]
+Desactivar temporizadores de sesión
+[Microphone Amplification]
+Amplificación de Micrófono
+[Software Level Adjustment]
+Ajuste del Volumen por Software
+[Shortcuts]
+Atajos
+[Enable]
+Activar
+[Label]
+Etiqueta
+[Type]
+Tipo
+[Bottom Position]
+Posición inferior
+[You need to restart application for the changes to take effect.]
+Debes reiniciar la aplicación para que los cambios tengan efecto.
+[Handle Media Buttons]
+Manejar Botones Multimedia
+[Bring to Front on Incoming Call]
+Traer al Frente en llam. Entrante
+[Help]
+Ayuda
+[Video Bitrate]
+Bitrate del Video
+[Control Button]
+Botón de Control
+[Do Not Disturb]
+No Molestar
+[Source Port]
+Puerto de Salida
+[RTP Ports]
+RTP ports
+[Import]
+Importar
+[Blind Transfer]
+Transf. Directa
+[Redial]
+Rellamada
+[Backspace]
+Retroceso
+[Clear]
+Limpiar
+[Use Space key to enable selected codec]
+Use la barra espaciadora para habilitar el códec seleccionado
+[Use Delele key to disable selected codec]
+Use la tecla Eliminar para deshabilitar el códec seleccionado
+[Conference]
+Conferencia
+[Dialing Prefix]
+Prefijo de Marcación
+[Register Refresh]
+Refresco de Registro
+[Keep-Alive]
+Keep-Alive
+[Ringtone Volume]
+Volumen del Tono de Llamada
+[Call Recording]
+Grabación de Llamada
+[Nameserver]
+Servidor DNS
+[Default List Action]
+Acción Predeterminada
+[Edit Local Account]
+Editar Cuenta Local
+[Export]
+Exportar
+[Call Waiting]
+Llamada en Espera
+[Ready]
+Disponible
+[Not online]
+Desconectado
+[On the phone]
+En una Llamada
+[First Name]
+Nombre
+[Last Name]
+Apellido
+[Phone Number]
+Número de Teléfono
+[Mobile Number]
+Número de Teléfono Móvil
+[E-mail Address]
+Dir. de e-Mail
+[Address]
+Dirección
+[City]
+Ciudad
+[State]
+Estado
+[Postal Code]
+Código Postal
+[Comment]
+Comentario
+[close window to ignore call]
+Cerrar la Ventana para ignorar la llamada
+[Headset Support]
+Soporte para Auriculares
+[sec]
+seg
+[Call Forwarding]
+Desvío de llamadas
+[Are you sure you want to delete?]
+¿Estás seguro de que quieres borrar?
+[Delete Contact]
+Borrar Contacto
+[Account or credentials not found.]
+Cuenta o credenciales no encontradas.
+[Please fill out all required fields.]
+Por favor, rellene todos los campos obligatorios.
+[Dial Plan]
+Plan de Marcación
+[Disable Video]
+Desactivar Vídeo
+[Disable Messaging]
+Deshabilitar Mensajería
+[Register]
+Registrar
+[Unregister]
+No Registrar
+[Options]
+Opciones
+[Delay]
+Retardo
+[Caller Number]
+Número de Llamante
+[Unable to find default audio device]
+No posible encontrar el dispositivo de audio predeterminado
+[Network is unreachable]
+Red no Alcanzable
+[Microphone access is blocked. Please check your antivirus settings or security software.]
+Permita el acceso al micrófono en la configuración de su antivirus.
+[Microphone access is turned off. Enable it in Windows Settings.]
+Corrija el permiso del micrófono en la configuración de Windows (Configuración de Windows -> Privacidad -> Micrófono).
+[Canceled]
+Cancelado
+[Softphone is not initialized. Check your settings.]
+Softphone no inicializado. Compruebe su configuración.
+[Unable to initialize network sockets.]
+No se pueden inicializar los sockets de red.
+[Unable to connect to the remote server.]
+No se puede conectar al servidor remoto.
+[Starred]
+Favorito
+[Run at System Startup]
+Ejecutar al iniciar el sistema
+[Run Batch]
+Ejecutar lote
+[Call URL]
+URL de Llamada
+[Call All]
+Llamar a Todos
+[Custom]
+Personalizado
+[Add Contact]
+Añadir Contacto
+[Incorrect dialing or non-existent number]
+Marcación incorrecta o número inexistente
+[End]
+Finalizar
+[Address Incomplete]
+Dirección incompleta
+[Not acceptable here]
+No es aceptable aquí
+[Idle]
+Inactivo
+[Toggle]
+Alternar
+[Connection refused]
+Conexión Rechazada
+[Connection timed out]
+Tiempo de Espera Agotado
+[Cannot get IP address of the called host]
+No se puede obtener la dirección IP del host llamado
+[Answered elsewhere]
+Respondido en Otro Lugar
+[Missed call]
+Llamada Perdida
+[Do you want to delete user data and program settings? This action cannot be undone.]
+¿Quiere eliminar los datos del usuario y la configuración del programa? Esta acción no se puede deshacer.
+[Unavailable]
+No Disponible
+[Call Limit]
+Límite de Llamadas
+[Hide Caller ID]
+Ocultar Mi Número
+[Feature Codes]
+Códigos de Función
+[Connection Failed]
+Conexión Fallida
+[The server returned an error code:]
+El servidor devolvió un código de error:
+[The received data cannot be recognized]
+Los datos recibidos no se pueden reconocer
+[Multi Monitor Support]
+Compatibilidad con varios monitores
+[Handle IP changes]
+Gestionar cambios de IP
+[Are you sure you want to delete the selected items?]
+¿Está seguro de que desea eliminar los elementos seleccionados?
+[Delete Call Log]
+Eliminar registro de llamadas
+[Accounts]
+Cuentas
+[Selected Accounts]
+Cuentas seleccionadas
+[Use Space key to add account]
+Use la tecla espaciadora para agregar una cuenta
+[Use Delele key to remove account]
+Use la tecla Supr para eliminar la cuenta
+[Export Configuration]
+Exportar configuración
+[Import Configuration]
+Importar configuración
+[Export Call Log]
+Exportar registro de llamadas
+[Import Call Log]
+Importar registro de llamadas
+[Export Contacts]
+Exportar contactos
+[Import Contacts]
+Importar contactos
+[Export/Import]
+Exportar/Importar
+[Soft]
+Suave
+[Hard]
+Duro
+[Active Calls]
+Llamadas activas
+[You already have an active call with this number.]
+Ya tienes una llamada activa con este número.
+[Attended transfer is not available in single-call mode. Disable this mode or use PBX feature codes.]
+La transferencia supervisada no está disponible en el modo de llamada única. Desactive este modo o utilice los códigos de función de la centralita.
+[Transfer Call to]
+Transferir llamada a
+[Disable name lookup in directory]
+Deshabilitar la búsqueda de nombres en el directorio
+[Unauthorized]
+No autorizado
+[Merge All]
+Combinar todo
+[Separate All]
+Separar todo
+[Auto Conference]
+Conferencia del Automóvil
+[Updating to the latest version may resolve this issue.]
+Actualizar a la última versión podría solucionar este problema.
+[Open the download page now?]
+¿Abrir la página de descarga ahora?
+[The application may have been launched from an unsafe location. Please download the application from the official website.]
+Es posible que la aplicación se haya descargado desde una ubicación no segura. Por favor, descárguela desde el sitio web oficial.
+[See the Freezes or Crashes help section.]
+Consulte la sección de ayuda sobre bloqueos o fallos del sistema.
+[Open troubleshooting page?]
+¿Abrir la página de solución de problemas?
+[Update now to stay secure and take advantage of the latest improvements.]
+Actualiza ahora para mantenerte seguro y aprovechar las últimas mejoras.
+[Thanks for testing the beta!]
+¡Gracias por probar la versión beta!
+[The final version is now available. Download it from our website.]
+La versión final ya está disponible. Descárgala desde nuestra página web.
+[Contact already exists]
+El contacto ya existe
+[Microphone and speakers are required.]
+Se requieren micrófono y altavoces.
+[No microphone or audio output device was detected. Please connect them to make calls.]
+No se detectó ningún micrófono ni dispositivo de salida de audio. Conéctelos para realizar llamadas.
+[Network connection is not available.]
+No hay conexión de red disponible.
+[Please check that your firewall or antivirus is not blocking this application.]
+Por favor, compruebe que su cortafuegos o antivirus no esté bloqueando esta aplicación.
+[A contact with this phone number already exists. Do you want to replace it?]
+Ya existe un contacto con este número de teléfono. ¿Desea reemplazarlo?
+[Activate or add an account in the main menu of the softphone.]
+Active o añada una cuenta en el menú principal del softphone.
+[A newer version may be available]
+Es posible que haya una versión más reciente disponible.
+[Please visit our website to check for updates.]
+Visite nuestro sitio web para consultar las actualizaciones.
+[This version is outdated]
+Esta versión está desactualizada.
+[This version is no longer supported]
+Esta versión ya no es compatible.
+[Please visit our website to download the latest version.]
+Visite nuestro sitio web para descargar la última versión.
+[Try the Lite version or update your graphics and camera drivers.]
+Prueba la versión Lite o actualiza los controladores de tu tarjeta gráfica y cámara.
+[A critical error occurred in the video subsystem]
+Se produjo un error crítico en el subsistema de vídeo.
+[The application crashed]
+La aplicación falló
+[Unable to create media session]
+No se pudo crear una sesión multimedia.
+[Call failed:]
+La llamada falló:
+[Unsupported codecs, encryption methods, or other media parameters]
+Códecs, métodos de cifrado u otros parámetros multimedia no compatibles.
+[Server error]
+Error del servidor
+[unencrypted]
+sin cifrar
+[This could be caused by driver issues, or other unexpected system problems.]
+Esto podría deberse a problemas con los controladores u otros problemas inesperados del sistema.
+[A critical error occurred in the audio subsystem]
+Se produjo un error crítico en el subsistema de audio.
+[A critical error occurred in the module on your PC]
+Se ha producido un error crítico en el módulo de su PC.
+[Unable to send the network request.]
+No se pudo enviar la solicitud de red.
+[If you don't have your account details, contact your IP telephony provider to obtain them.]
+Si no dispone de los datos de su cuenta, póngase en contacto con su proveedor de telefonía IP para obtenerlos.
+[Phone:]
+Teléfono:
+[Mobile:]
+Móvil:
+[Search]
+Buscar
+[This will disconnect you from the PBX server. You will no longer be able to make or receive calls. Are you sure?]
+Esto te desconectará del servidor PBX. Ya no podrás hacer ni recibir llamadas. ¿Estás seguro?
+[You will no longer be able to make outgoing calls using this account. Are you sure?]
+Ya no podrás realizar llamadas salientes con esta cuenta. ¿Estás seguro?
+[Establishing connection...]
+Estableciendo conexión...
+[Incoming call from]
+Llamada entrante de
+[Connected to]
+Conectado a
+[Call transfer]
+Transferencia de llamada
+[Database Access Error]
+Error de acceso a la base de datos
+[Database Write Error]
+Error de escritura en la base de datos
+[The call could not be loaded due to a database error.]
+No se pudo cargar la llamada debido a un error de la base de datos.
+[The call could not be added to call history.]
+No se pudo añadir la llamada al historial de llamadas.
+[The call could not be updated in call history.]
+No se pudo actualizar la llamada en el historial de llamadas.
+[Call history could not be imported due to a database error.]
+No se pudo importar el historial de llamadas debido a un error en la base de datos.
+[Call history could not be exported due to a database error.]
+No se pudo exportar el historial de llamadas debido a un error en la base de datos.
+[The call could not be deleted from call history.]
+No se pudo eliminar la llamada del historial de llamadas.
+[The selected calls could not be deleted from call history.]
+Las llamadas seleccionadas no se pudieron eliminar del historial de llamadas.
+[Call history could not be cleared due to a database error.]
+No se pudo borrar el historial de llamadas debido a un error en la base de datos.
+[Call history could not be loaded due to a database error.]
+No se pudo cargar el historial de llamadas debido a un error en la base de datos.
+[Camera access for desktop apps is disabled]
+El acceso a la cámara para las aplicaciones de escritorio está deshabilitado.
+[To make video calls, allow desktop apps to access your camera in Windows settings.]
+Para realizar videollamadas, permite que las aplicaciones de escritorio accedan a tu cámara en la configuración de Windows.
+[Do not show this message again]
+No volver a mostrar este mensaje
+[Disable Account?]
+¿Desactivar cuenta?
+[]
+
+[Color Mode]
+Modo de color
+[System]
+Sistema
+[Light]
+Claro
+[Dark]
+Oscuro
+

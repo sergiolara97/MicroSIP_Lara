@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7A1C3E52-9B4D-4F6A-9C21-3D5E8B7A4C11}</ProjectGuid>
+    <RootNamespace>MicroSIPModern</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup>
+    <PjRoot>..\..\pjproject-2.15.1</PjRoot>
+    <JsonRoot>..\..\MicroSIP-3.22.16-src\lib\jsoncpp</JsonRoot>
+    <WebViewRoot>..\..\webview2-sdk\build\native</WebViewRoot>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;NDEBUG;WIN32_LEAN_AND_MEAN;NOMINMAX;PJ_WIN32=1;PJ_M_I386=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(PjRoot)\pjlib\include;$(PjRoot)\pjsip\include;$(PjRoot)\pjmedia\include;$(PjRoot)\pjnath\include;$(PjRoot)\pjlib-util\include;$(PjRoot)\third_party\sqlite3;$(JsonRoot);$(WebViewRoot)\include;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <SDLCheck>false</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalOptions>/PDBALTPATH:%_PDB%</AdditionalOptions>
+      <AdditionalLibraryDirectories>$(PjRoot)\lib;$(WebViewRoot)\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libpjproject-i386-Win32-vc14-Release-Static.lib;WebView2LoaderStatic.lib;ws2_32.lib;winmm.lib;dsound.lib;ole32.lib;oleaut32.lib;uuid.lib;crypt32.lib;secur32.lib;iphlpapi.lib;version.lib;dwmapi.lib;shlwapi.lib;user32.lib;gdi32.lib;advapi32.lib;shell32.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Manifest>
+      <AdditionalManifestFiles>app.manifest</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;UNICODE;_UNICODE;_DEBUG;WIN32_LEAN_AND_MEAN;NOMINMAX;PJ_WIN32=1;PJ_M_I386=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(PjRoot)\pjlib\include;$(PjRoot)\pjsip\include;$(PjRoot)\pjmedia\include;$(PjRoot)\pjnath\include;$(PjRoot)\pjlib-util\include;$(PjRoot)\third_party\sqlite3;$(JsonRoot);$(WebViewRoot)\include;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <SDLCheck>false</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(PjRoot)\lib;$(WebViewRoot)\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libpjproject-i386-Win32-vc14-Release-Static.lib;WebView2LoaderStatic.lib;ws2_32.lib;winmm.lib;dsound.lib;ole32.lib;oleaut32.lib;uuid.lib;crypt32.lib;secur32.lib;iphlpapi.lib;version.lib;dwmapi.lib;shlwapi.lib;user32.lib;gdi32.lib;advapi32.lib;shell32.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Manifest>
+      <AdditionalManifestFiles>app.manifest</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="SipCore.cpp" />
+    <ClCompile Include="JabraLink.cpp" />
+    <ClCompile Include="HidLink.cpp" />
+<ClCompile Include="TeamsPresence.cpp" />
+<ClCompile Include="CallToast.cpp" />
+    <ClCompile Include="..\..\pjproject-2.15.1\third_party\sqlite3\sqlite3.c">
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="..\..\MicroSIP-3.22.16-src\lib\jsoncpp\json_reader.cpp" />
+    <ClCompile Include="..\..\MicroSIP-3.22.16-src\lib\jsoncpp\json_value.cpp" />
+    <ClCompile Include="..\..\MicroSIP-3.22.16-src\lib\jsoncpp\json_writer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SipCore.h" />
+    <ClInclude Include="JabraLink.h" />
+    <ClInclude Include="HidLink.h" />
+<ClInclude Include="TeamsPresence.h" />
+<ClInclude Include="CallToast.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="web\index.html" />
+    <None Include="web\app.js" />
+    <None Include="web\logo.svg" />
+    <None Include="app.manifest" />
+    <None Include="microsip.ico" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
