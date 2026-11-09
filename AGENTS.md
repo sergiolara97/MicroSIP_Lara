@@ -5,6 +5,29 @@ Dos apps en el mismo repo: el fork **MFC** de MicroSIP 3.22.16
 (`MicroSIP-Modern/`) que enlaza `libpjproject` sin MFC. Comentarios, docs y
 commits en español. **Sin CI, sin tests, sin `opencode.json`.**
 
+## Antes de commitear: sin datos reales
+
+**Nunca registres datos reales en git.** Nombres de personas, extensiones,
+teléfonos, correos, IPs, dominios, proveedores SIP, credenciales y rutas con
+nombre de usuario se sustituyen por valores ficticios y neutros: `1234`, `100`,
+`example.com`, `dominio.ejemplo`, `Nombre`. Los ejemplos de código, docs,
+prototipos y `dist/` se publican igual que el resto.
+
+Antes de cada commit:
+
+1. `git status --porcelain=v1 -uall`: no deben aparecer `microsip.ini`, logs,
+   `.db`, `.tsv`, `webview-data/` ni `recordings/`.
+2. Lee `git diff --cached` completo: nombres, extensiones (también las de 3-4
+   cifras) y teléfonos deben ser inventados. Revisa `dist/`, `prototype/` y
+   `docs/`, no solo el código.
+3. Busca restos:
+   ```powershell
+   git grep -nIi -E '\+?[0-9]{7,}|@[a-z0-9.-]+\.(com|es|net|org|pt)|C:\\Users\\' -- ':!pjproject-2.15.1' ':!MicroSIP-3.22.16-src/lib' ':!LICENSE*'
+   ```
+   Ignora los falsos positivos evidentes (versiones, IDs, colores).
+4. Un commit nuevo **no borra** lo ya publicado: si un dato real llegó al
+   historial, hay que reescribirlo antes de publicar.
+
 ## Dónde editar
 
 - `MicroSIP-3.22.16-src/` — código MFC. Es la única fuente; el resto es generado.
