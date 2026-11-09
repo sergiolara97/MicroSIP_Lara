@@ -1715,16 +1715,16 @@ if (api) {
       ],
     },
     history: [
-      { time: Math.floor(Date.now() / 1000) - 600, number: '204', name: 'Ana Torres', type: 'missed', duration: 0 },
-      { time: Math.floor(Date.now() / 1000) - 3600, number: '210', name: 'Soporte Nivel 2', type: 'out', duration: 240 },
+      { time: Math.floor(Date.now() / 1000) - 600, number: '101', name: 'Ana Torres', type: 'missed', duration: 0 },
+      { time: Math.floor(Date.now() / 1000) - 3600, number: '102', name: 'Soporte Nivel 2', type: 'out', duration: 240 },
     ],
     contacts: [
-      { name: 'Ana Torres', number: '204', info: '' },
-      { name: 'Luis Martín', number: '215', info: '' },
+      { name: 'Ana Torres', number: '101', info: '' },
+      { name: 'Luis Martín', number: '103', info: '' },
     ],
     messages: [
-      { time: Math.floor(Date.now() / 1000) - 420, peer: '204', from: 'sip:204@demo', body: '¿Me pasas el informe?', outgoing: false, status: 'received' },
-      { time: Math.floor(Date.now() / 1000) - 300, peer: '204', from: 'sip:demo@demo', body: 'Claro, te lo envío ahora.', outgoing: true, status: 'sent' },
+      { time: Math.floor(Date.now() / 1000) - 420, peer: '101', from: 'sip:101@demo', body: '¿Me pasas el informe?', outgoing: false, status: 'received' },
+      { time: Math.floor(Date.now() / 1000) - 300, peer: '101', from: 'sip:demo@demo', body: 'Claro, te lo envío ahora.', outgoing: true, status: 'sent' },
     ],
   });
 }

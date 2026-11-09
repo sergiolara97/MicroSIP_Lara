@@ -408,7 +408,7 @@ std::wstring PickFile(bool save, const wchar_t* filter, const wchar_t* defExt)
 	return ok ? std::wstring(path) : std::wstring();
 }
 
-// "AnaPerez" <sip:204@10.0.0.1> -> nombre y numero por separado.
+// "Nombre" <sip:1234@10.0.0.1> -> nombre y numero por separado.
 void SplitRemote(const std::string& remote, std::wstring& name, std::wstring& number)
 {
 	size_t quote = remote.find('"');

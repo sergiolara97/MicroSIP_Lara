@@ -28,7 +28,7 @@ struct Info {
 	bool ringing = false;
 	int callId = -1;
 	std::wstring name;          // contacto o numero
-	std::wstring detail;        // numero y estado ("204 - Llamada entrante")
+	std::wstring detail;        // numero y estado ("1234 - Llamada entrante")
 	std::wstring answerLabel;   // Contestar
 	std::wstring hangupLabel;   // Colgar
 	COLORREF accent = RGB(198, 12, 48);

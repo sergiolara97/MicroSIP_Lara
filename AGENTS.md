@@ -110,7 +110,7 @@ verificar posición, visibilidad y `WS_EX_TOPMOST`.
   history, contacts, messages}`. La lista real de comandos está en
   `HandleMessage` (`main.cpp`); al añadir uno hay que tocar también `app.js`.
 - **Identidad del llamante**: se prefiere `P-Asserted-Identity` y luego
-  `Remote-Party-ID` al `From` (los trunks tipo SIP mandan
+  `Remote-Party-ID` al `From` (algunos trunks mandan
   `From: sip:trunk@dominio.ejemplo` y el número real en PAI/RPID). `BuildState`
   y el historial usan esa identidad; sin PAI/RPID se cae al `From`.
 - **Caché de WebView2**: al tocar HTML/JS sube la versión en **dos** sitios o

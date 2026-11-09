@@ -85,7 +85,7 @@ std::string HeaderValue(const pjsip_msg* msg, const char* name)
 	return std::string();
 }
 
-// Usuario de la URI sip: de una identidad ("Nombre" <sip:34600@host>).
+// Usuario de la URI sip: de una identidad ("Nombre" <sip:1234@host>).
 std::string UriUser(const std::string& value)
 {
 	size_t sip = value.find("sip:");
