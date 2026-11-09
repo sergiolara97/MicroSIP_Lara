@@ -950,6 +950,7 @@ std::string SipCore::BuildState()
 	settings["hidHeadset"] = GetSetting("hidHeadset", "1") == "1";
 	settings["teamsPresence"] = GetSetting("teamsPresence", "1") == "1";
 	settings["callToast"] = GetSetting("callToast", "1") == "1";
+	settings["callToastScreen"] = GetSetting("callToastScreen", "primary");
 	settings["callToastPosition"] = GetSetting("callToastPosition", "topright");
 	settings["audioCodecs"] = audioCodecs_;
 	settings["forceCodec"] = forceCodec_;

@@ -35,6 +35,8 @@ struct Info {
 	// Esquina de la pantalla: 0 arriba-derecha, 1 arriba-izquierda,
 	// 2 abajo-derecha, 3 abajo-izquierda.
 	int corner = 0;
+	// true: pantalla principal; false: pantalla donde esta MicroSIP.
+	bool primaryScreen = true;
 };
 
 // Muestra, actualiza u oculta la notificacion.

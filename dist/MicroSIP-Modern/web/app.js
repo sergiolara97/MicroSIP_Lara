@@ -1515,6 +1515,7 @@ function renderSettingsForm() {
   toggle('#setTeamsPresence', settings.teamsPresence);
   toggle('#setCallToast', settings.callToast);
   set('#setToastPosition', settings.callToastPosition || 'topright');
+  set('#setToastScreen', settings.callToastScreen || 'primary');
   toggle('#setForwarding', settings.forwarding);
   set('#setForwardNumber', settings.forwardingNumber || '');
   set('#setFeatureCodeCP', settings.featureCodeCP || '**');
@@ -1561,6 +1562,7 @@ function renderSettingsForm() {
   ['#setFeatureCodeCP', 'featureCodeCP'],
   ['#setRingDevice', 'ringDevice'],
   ['#setToastPosition', 'callToastPosition'],
+  ['#setToastScreen', 'callToastScreen'],
 ].forEach(([id, key]) => {
   const el = $(id);
   if (!el) return;

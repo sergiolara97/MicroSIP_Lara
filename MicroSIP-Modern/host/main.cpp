@@ -504,6 +504,9 @@ void SyncCallToast()
 			else if (corner == "bottomleft") {
 				info.corner = 3;
 			}
+
+			// Pantalla principal por defecto; "app" = la de MicroSIP.
+			info.primaryScreen = core.GetSetting("callToastScreen", "primary") != "app";
 		}
 	}
 
@@ -884,6 +887,9 @@ void HandleMessage(const std::wstring& message)
 		else if (key == "callToast") {
 			SyncCallToast();
 		}
+		else if (key == "callToastScreen") {
+			SyncCallToast();
+		}
 		else if (key == "volumeRing") {
 			g_ringVolume = atoi(value.c_str());
 			if (g_ringVolume < 0 || g_ringVolume > 100) {
@@ -1142,7 +1148,7 @@ void ResizeWebView()
 void CreateWebView()
 {
 	std::wstring userData = g_appDir + L"\\webview-data";
-	std::wstring url = std::wstring(L"https://") + kVirtualHost + L"/index.html?v=31";
+	std::wstring url = std::wstring(L"https://") + kVirtualHost + L"/index.html?v=32";
 
 	CreateCoreWebView2EnvironmentWithOptions(nullptr, userData.c_str(), nullptr,
 		Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(

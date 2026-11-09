@@ -165,7 +165,8 @@ verificar posición, visibilidad y `WS_EX_TOPMOST`.
   `forwardingNumber`, `featureCodeCP`, `audioCodecs`, `forceCodec`,
   `DTMFMethod`(`rfc2833`/`sipinfo`), `volumeRing`, `ringDevice`, `language`,
   `localDTMF`, `accentColor`, `alwaysOnTop`, `hidHeadset`, `hidHeadsetIds`,
-  `hidHoldMs`, `teamsPresence`, `callToast`, `callToastPosition`.
+  `hidHoldMs`, `teamsPresence`, `callToast`, `callToastPosition`,
+  `callToastScreen`.
 - `pjsua_media_config_default` ya trae `clock_rate`: no lo pongas a 0 (rompe el
   conference bridge).
 
@@ -206,9 +207,10 @@ telefonía `0x0B`. Los EarPods USB-C (`05AC:110B`) mandan el botón central como
 ## Notificación de llamada (`CallToast`)
 
 Ventana propia con el número/contacto y dos botones, **solo mientras entra la
-llamada**: al contestar o al colgar desaparece. Ajustes `callToast` (`1`) y
+llamada**: al contestar o al colgar desaparece. Ajustes `callToast` (`1`),
 `callToastPosition` (`topright` por defecto; `topleft`, `bottomright`,
-`bottomleft`).
+`bottomleft`) y `callToastScreen` (`primary` por defecto = pantalla principal;
+`app` = pantalla donde está MicroSIP).
 
 - **No es un toast de WinRT**: los botones de un toast de una app sin empaquetar
   necesitan un servidor COM (`INotificationActivationCallback`) con AUMID,

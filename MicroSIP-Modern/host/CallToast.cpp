@@ -101,6 +101,32 @@ UINT DpiForWindow(HWND hwnd)
 	return 96;
 }
 
+// DPI efectivo del monitor indicado (GetDpiForMonitor vive en shcore.dll).
+UINT DpiForMonitor(HMONITOR monitor)
+{
+	using GetDpiForMonitorFn = HRESULT(WINAPI*)(HMONITOR, int, UINT*, UINT*);
+	static GetDpiForMonitorFn fn = reinterpret_cast<GetDpiForMonitorFn>(
+		GetProcAddress(LoadLibraryW(L"shcore.dll"), "GetDpiForMonitor"));
+	if (fn) {
+		UINT dpiX = 0;
+		UINT dpiY = 0;
+		if (SUCCEEDED(fn(monitor, 0 /* MDT_EFFECTIVE_DPI */, &dpiX, &dpiY)) && dpiX != 0) {
+			return dpiX;
+		}
+	}
+	return 0;
+}
+
+// Monitor donde se coloca el aviso: la pantalla principal o la de MicroSIP.
+HMONITOR TargetMonitor(bool primaryScreen)
+{
+	POINT origin = { 0, 0 };
+	HWND reference = g_owner ? g_owner : g_hwnd;
+	return primaryScreen
+		? MonitorFromPoint(origin, MONITOR_DEFAULTTOPRIMARY)
+		: MonitorFromWindow(reference, MONITOR_DEFAULTTONEAREST);
+}
+
 HFONT MakeFont(int pixels, int weight)
 {
 	LOGFONTW logFont = {};
@@ -288,8 +314,8 @@ void PositionWindow()
 	if (!g_hwnd) {
 		return;
 	}
-	HWND reference = g_owner ? g_owner : g_hwnd;
-	HMONITOR monitor = MonitorFromWindow(reference, MONITOR_DEFAULTTONEAREST);
+	// Por defecto la pantalla principal; opcionalmente la de MicroSIP.
+	HMONITOR monitor = TargetMonitor(g_info.primaryScreen);
 	MONITORINFO info = { sizeof(info) };
 	RECT work = { 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN) };
 	if (GetMonitorInfoW(monitor, &info)) {
@@ -420,7 +446,12 @@ void CallToast::Sync(HWND owner, const Info& info)
 		return;
 	}
 
-	UINT dpi = DpiForWindow(owner ? owner : g_hwnd);
+	UINT dpi = DpiForMonitor(TargetMonitor(info.primaryScreen));
+	if (dpi == 0) {
+		dpi = info.primaryScreen
+			? DpiForWindow(GetDesktopWindow())
+			: DpiForWindow(owner ? owner : g_hwnd);
+	}
 	if (dpi != 0 && dpi != g_dpi) {
 		g_dpi = dpi;
 	}
@@ -440,7 +471,8 @@ void CallToast::Sync(HWND owner, const Info& info)
 		|| g_info.ringing != info.ringing
 		|| g_info.answerLabel != info.answerLabel
 		|| g_info.hangupLabel != info.hangupLabel
-		|| g_info.accent != info.accent;
+		|| g_info.accent != info.accent
+		|| g_info.primaryScreen != info.primaryScreen;
 
 	g_info = info;
 	PositionWindow();
