@@ -66,6 +66,44 @@ const char* CallStateText(pjsip_inv_state state)
 	return "unknown";
 }
 
+// Valor de una cabecera generica (P-Asserted-Identity, Remote-Party-ID...).
+std::string HeaderValue(const pjsip_msg* msg, const char* name)
+{
+	if (!msg) {
+		return std::string();
+	}
+	for (const pjsip_hdr* h = msg->hdr.next; h != &msg->hdr; h = h->next) {
+		if (h->type != PJSIP_H_OTHER) {
+			continue;
+		}
+		const pjsip_generic_string_hdr* gh = (const pjsip_generic_string_hdr*)h;
+		std::string headerName(pj_strbuf(&gh->name), (size_t)pj_strlen(&gh->name));
+		if (_stricmp(headerName.c_str(), name) == 0) {
+			return std::string(pj_strbuf(&gh->hvalue), (size_t)pj_strlen(&gh->hvalue));
+		}
+	}
+	return std::string();
+}
+
+// Usuario de la URI sip: de una identidad ("Nombre" <sip:34600@host>).
+std::string UriUser(const std::string& value)
+{
+	size_t sip = value.find("sip:");
+	size_t sips = value.find("sips:");
+	size_t start;
+	if (sips != std::string::npos && (sip == std::string::npos || sips < sip)) {
+		start = sips + 5;
+	}
+	else if (sip != std::string::npos) {
+		start = sip + 4;
+	}
+	else {
+		return std::string();
+	}
+	size_t stop = value.find_first_of("@;>", start);
+	return value.substr(start, stop == std::string::npos ? std::string::npos : stop - start);
+}
+
 long long NowSeconds()
 {
 	return (long long)time(nullptr);
@@ -980,8 +1018,18 @@ std::string SipCore::BuildState()
 			call["state"] = CallStateText(ci.state);
 			call["incoming"] = (ci.role == PJSIP_ROLE_UAS);
 			call["held"] = (ci.media_status == PJSUA_CALL_MEDIA_REMOTE_HOLD) || (ci.media_status == PJSUA_CALL_MEDIA_LOCAL_HOLD);
-			call["remote"] = pj_strbuf(&ci.remote_info) ? pj_strbuf(&ci.remote_info) : "";
-			call["remoteNumber"] = pj_strbuf(&ci.remote_contact) ? pj_strbuf(&ci.remote_contact) : "";
+			std::string remote = pj_strbuf(&ci.remote_info) ? pj_strbuf(&ci.remote_info) : "";
+			std::string number = pj_strbuf(&ci.remote_contact) ? pj_strbuf(&ci.remote_contact) : "";
+			{
+				std::lock_guard<std::mutex> lock(identityMutex_);
+				auto identity = callIdentity_.find((int)ci.id);
+				if (identity != callIdentity_.end()) {
+					remote = identity->second.remote;
+					number = identity->second.number;
+				}
+			}
+			call["remote"] = remote;
+			call["remoteNumber"] = number;
 			call["duration"] = (double)ci.connect_duration.sec;
 			calls.append(call);
 		}
@@ -2738,6 +2786,29 @@ void msip_on_incoming_call(pjsua_acc_id acc_id, pjsua_call_id call_id, pjsip_rx_
 {
 	SipCore& core = SipCore::Instance();
 
+	// Identidad real del llamante: algunos trunks mandan
+	// From: sip:trunk@... y ponen el numero en P-Asserted-Identity o
+	// Remote-Party-ID. Se prefiere esa cabecera para la UI y el historial.
+	if (rdata && rdata->msg_info.msg) {
+		const pjsip_msg* msg = rdata->msg_info.msg;
+		std::string identity = HeaderValue(msg, "P-Asserted-Identity");
+		if (identity.empty()) {
+			identity = HeaderValue(msg, "Remote-Party-ID");
+		}
+		// Sin PAI/RPID, BuildState usa ci.remote_info (el From).
+		if (!identity.empty()) {
+			SipCore::CallIdentity info;
+			info.remote = identity;
+			info.number = UriUser(identity);
+			{
+				std::lock_guard<std::mutex> lock(core.identityMutex_);
+				core.callIdentity_[(int)call_id] = info;
+			}
+			PJ_LOG(2, ("SipCore", "incoming %d identity='%s' number='%s'",
+				(int)call_id, info.remote.c_str(), info.number.c_str()));
+		}
+	}
+
 	// No molestar: se rechaza la llamada (antes solo cambiaba el icono).
 	if (core.Dnd()) {
 		pjsua_call_answer(call_id, 486, nullptr, nullptr);
@@ -2797,6 +2868,14 @@ void msip_on_call_state(pjsua_call_id call_id, pjsip_event* event)
 		MsipHistoryItem item;
 		item.time = NowSeconds();
 		item.number = pj_strbuf(&ci.remote_info) ? pj_strbuf(&ci.remote_info) : "";
+		{
+			std::lock_guard<std::mutex> lock(core.identityMutex_);
+			auto identity = core.callIdentity_.find((int)call_id);
+			if (identity != core.callIdentity_.end()) {
+				item.number = identity->second.remote;
+				core.callIdentity_.erase(identity);
+			}
+		}
 		item.name = item.number;
 		bool incoming = (ci.role == PJSIP_ROLE_UAS);
 		bool connected = (ci.connect_duration.sec > 0 || ci.total_duration.sec > 0);

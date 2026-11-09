@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include <map>
 
 #include <pjsua-lib/pjsua.h>
 
@@ -287,6 +288,14 @@ private:
 	std::vector<MsipContact> contacts_;
 	std::vector<MsipChatMessage> messages_;
 	std::vector<MsipShortcut> shortcuts_;
+
+	// Identidad preferida por llamada (P-Asserted-Identity / Remote-Party-ID).
+	struct CallIdentity {
+		std::string remote;
+		std::string number;
+	};
+	std::map<int, CallIdentity> callIdentity_;
+	mutable std::mutex identityMutex_;
 
 	friend void msip_on_call_state(pjsua_call_id, pjsip_event*);
 	friend void msip_on_incoming_call(pjsua_acc_id, pjsua_call_id, pjsip_rx_data*);
