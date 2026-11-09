@@ -119,6 +119,7 @@ public:
 	void AnswerIncoming();
 	void HangupIncoming();
 	void ToggleMute();
+	bool Muted() const { return muted_; }
 	void Transfer(int id, const std::string& number);
 	void StartRecordingIfNeeded();
 	void StopRecording();

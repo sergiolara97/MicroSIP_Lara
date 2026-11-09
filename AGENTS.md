@@ -268,6 +268,28 @@ llamada `CONFIRMED` y **al colgar restaura el estado que hubiera** antes (ajuste
   `AutomationId=idna-me-control-avatar-trigger` y su `Name` es
   *"Tu perfil, estado Disponible"* (UIA). Útil para verificar sin tocar nada.
 
+## Jabra (app moderna)
+
+`JabraLink.cpp` ⇄ JSON por stdin/stdout ⇄ `JabraBridge.exe`. El estado que se
+manda al auricular se calcula en `SendSnapshot()`.
+
+- **No mandes `offhook=true` mientras la llamada solo timbra**: el SDK lo toma
+  como llamada activa, devuelve `HookSwitch` y el host lo interpreta como
+  "contestar" → la llamada se autodescolgaba. Para timbre:
+  `offhook=false, ring=true`. Es el mismo criterio que la app MFC
+  (`GetCallsCount()` excluye INCOMING/EARLY por defecto).
+- Bajar el boom para contestar llega como `HookSwitch` (y en algunos modelos
+  como `PhoneMute`); ambos contestan si hay una entrante.
+- `PhoneMute` es también el acuse de cada `Mute()` que manda el puente. Si se
+  reenvía, el host lo trata como una pulsación y el mute oscila en bucle: el
+  puente descarta el `PhoneMute` que llega menos de 2 s después de un `Mute()`.
+- `microsip-modern.log` lo escribe pjsua **sin `flush`**: durante una prueba en
+  vivo puede ir con retraso; al cerrar la app se vuelca.
+- Para probar una entrante real sin segunda extensión, manda un `INVITE` UDP al
+  puerto efímero del proceso (`Get-NetUDPEndpoint`). Marcar la propia extensión
+  crea además una pata saliente y el auricular puede mandar `PhoneMute` en vez
+  de `HookSwitch`.
+
 ## Jabra (app MFC)
 
 `MicroSIP (Jabra.cpp)` ⇄ JSON por stdin/stdout ⇄ `JabraBridge.exe` ⇄ SDK.

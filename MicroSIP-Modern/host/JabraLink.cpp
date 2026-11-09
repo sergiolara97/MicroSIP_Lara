@@ -194,6 +194,10 @@ void JabraLink::SendState(bool offhook, bool ring, bool mute)
 	if (lastValid_ && lastOffhook_ == offhook && lastRing_ == ring && lastMute_ == mute) {
 		return;
 	}
+	DWORD now = GetTickCount();
+	if (ring && (!lastValid_ || !lastRing_)) {
+		ringSince_ = now;
+	}
 	lastValid_ = true;
 	lastOffhook_ = offhook;
 	lastRing_ = ring;
@@ -234,17 +238,48 @@ void JabraLink::HandleEvent(const std::string& json)
 	bool value = root["value"].asBool();
 	std::string change = root["change"].asString();
 
+	PJ_LOG(2, ("JabraLink", "signal %s value=%d change=%s",
+		name.c_str(), value ? 1 : 0, change.c_str()));
+
 	if (name == "HookSwitch") {
-		bool offhook = (change == "Absolute") ? value : true;
-		if (!offhook) {
-			core.HangupAll();
+		// Absolute trae el estado fisico del gancho; Relative es una pulsacion
+		// que lo alterna. Un true siempre contesta (si no hay entrante,
+		// AnswerIncoming no hace nada); es lo que manda el SDK al bajar el
+		// boom para contestar y como acuse de OffHook(true).
+		bool offhook = (change == "Absolute") ? value : !hookOff_;
+		hookOff_ = offhook;
+
+		if (offhook) {
+			core.AnswerIncoming();
 		}
 		else {
-			core.AnswerIncoming();
+			// Un false mientras solo timbra es el acuse de OffHook(false) del
+			// estado de timbre, no una orden de colgar: se ignora.
+			if (core.HasIncomingCall() && core.ActiveCallCount() == 0) {
+				return;
+			}
+			core.HangupAll();
 		}
 	}
 	else if (name == "PhoneMute") {
-		core.ToggleMute();
+		// El dispositivo devuelve un PhoneMute como acuse de cada Mute() que
+		// le manda el host. Interpretarlo como pulsacion hace que el mute
+		// oscile en bucle; el puente filtra ese acuse antes de enviarlo.
+		DWORD now = GetTickCount();
+
+		// Bajar el boom para contestar tambien llega como PhoneMute (el
+		// dispositivo no manda HookSwitch en todos los modelos): si hay una
+		// entrante timbrando, se contesta y se deja el micro sin silenciar.
+		if (core.HasIncomingCall() && ringSince_ != 0 && (DWORD)(now - ringSince_) > 1200) {
+			core.SetMute(false);
+			core.AnswerIncoming();
+			return;
+		}
+
+		bool muted = (change == "Absolute") ? value : !core.Muted();
+		if (muted != core.Muted()) {
+			core.SetMute(muted);
+		}
 	}
 	else if (name == "RejectCall") {
 		core.HangupIncoming();

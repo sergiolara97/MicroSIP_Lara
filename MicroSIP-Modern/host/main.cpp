@@ -553,12 +553,23 @@ void SendSnapshot()
 	reader.parse(core.MessagesJson(), messages);
 	root["messages"] = messages;
 
-	// Estado para el auricular (LEDs y busylight)
-	bool offhook = state["calls"].size() > 0;
+	// Estado para el auricular (LEDs y busylight). Una llamada entrante que
+	// aun timbra NO esta descolgada: si se manda offhook=true, algunos Jabra
+	// la contestan solos (y el SDK devuelve HookSwitch, que la contesta otra
+	// vez). Se replica el criterio de la app MFC: las llamadas entrantes en
+	// INCOMING/EARLY no cuentan como descolgadas.
+	bool offhook = false;
 	bool ring = false;
 	for (const auto& call : state["calls"]) {
-		if (call["state"].asString() == "incoming") {
+		std::string callState = call["state"].asString();
+		if (callState.empty() || callState == "null" || callState == "disconnected") {
+			continue;
+		}
+		if (callState == "incoming" || (callState == "early" && call["incoming"].asBool())) {
 			ring = true;
+		}
+		else {
+			offhook = true;
 		}
 	}
 	JabraLink::Instance().SendState(offhook, ring, state["muted"].asBool());

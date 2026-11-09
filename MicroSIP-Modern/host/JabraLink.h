@@ -40,4 +40,8 @@ private:
 	bool lastOffhook_ = false;
 	bool lastRing_ = false;
 	bool lastMute_ = false;
+	// Estado fisico del gancho segun el SDK (no el que se le manda).
+	bool hookOff_ = false;
+	// Momento en que empezo a timbrar la llamada entrante actual.
+	DWORD ringSince_ = 0;
 };

@@ -231,6 +231,12 @@ namespace JabraBridge
         private bool _busylightOn;
         private bool _busylightKnown;
 
+        // Acuse de PhoneMute: el dispositivo devuelve un PhoneMute tras cada
+        // Mute() que le manda el puente. Si se reenvia al host, este lo
+        // interpreta como una pulsacion y el mute oscila en bucle.
+        private bool? _lastMuteApplied;
+        private int _muteAppliedTick;
+
         public JabraService(Action<string> emit, Action<string> log)
         {
             _emitLine = emit;
@@ -406,6 +412,17 @@ namespace JabraBridge
                 return;
             }
 
+            // PhoneMute que llega poco despues de un Mute() nuestro es el
+            // acuse del dispositivo, no una pulsacion del usuario.
+            if (signal.Type == SignalType.PhoneMute)
+            {
+                int tick = Volatile.Read(ref _muteAppliedTick);
+                if (tick != 0 && unchecked((uint)(Environment.TickCount - tick)) < 2000)
+                {
+                    return;
+                }
+            }
+
             string change = signal.ValueChangeType == ValueChangeType.Absolute ? "Absolute" : "Relative";
             Emit("{\"ev\":\"signal\",\"name\":" + Json(signal.Type.ToString()) +
                  ",\"value\":" + (signal.Value ? "true" : "false") +
@@ -465,7 +482,12 @@ namespace JabraBridge
             {
                 callControl.OffHook(offhook);
                 callControl.Ring(ring);
-                callControl.Mute(mute);
+                if (_lastMuteApplied != mute)
+                {
+                    _lastMuteApplied = mute;
+                    Interlocked.Exchange(ref _muteAppliedTick, Environment.TickCount);
+                    callControl.Mute(mute);
+                }
                 callControl.Hold(hold);
             }
             catch (Exception ex)
