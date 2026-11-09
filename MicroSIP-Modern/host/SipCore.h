@@ -153,6 +153,7 @@ public:
 	void SwapTo(int id);
 	void SetMute(bool on);
 	void SetMuteOutput(bool on);
+	void LogConfLevels();
 	void SendDtmf(const std::string& digit);
 	void PlayDtmfTone(const std::string& digits);
 	void StopDtmfTone();

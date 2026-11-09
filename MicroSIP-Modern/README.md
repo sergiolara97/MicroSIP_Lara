@@ -49,6 +49,7 @@ botón **+** crea una cuenta nueva (`AccountN` en `microsip.ini`).
 | Siempre visible (always on top) desde el menú | ✅ |
 | Atajos de marcación rápida (importados de MicroSIP) | ✅ |
 | Cerrar a la bandeja del sistema (X oculta; menú Abrir/Salir) | ✅ |
+| Bandeja y botón de la barra: icono de micrófono verde con el micro abierto y rojo tachado al silenciar | ✅ |
 | Presencia (estado en línea de contactos) | ⏳ pendiente |
 | Vídeo | ❌ no disponible en este build |
 

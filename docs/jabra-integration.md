@@ -134,6 +134,9 @@ amr) quedan fuera. La integración Jabra no depende de ninguna de ellas.
 - El puente escribe los errores por `stderr` (no se muestran en la UI).
 - MicroSIP registra los eventos en su log habitual (`PJ_LOG`) cuando el log está
   activado: busca las líneas `Jabra.cpp`.
+- Para volcar el protocolo entre el SDK y el conector de Jabra, crea el fichero
+  `%LOCALAPPDATA%\MicroSIP-Modern\jabra-debug.on`: el puente escribe
+  `jabra-transport.log` en esa carpeta. Bórralo para dejar de generar el volcado.
 - Para probar el puente a mano:
 
   ```powershell
@@ -163,7 +166,16 @@ Comandos de MicroSIP al puente:
 
 ```json
 {"cmd":"state","offhook":true,"ring":false,"mute":false,"hold":false}
+{"cmd":"state","offhook":true,"ring":false,"mute":true,"hold":false,"muteFromDevice":true}
 {"cmd":"busylight","on":true}
 {"cmd":"ping"}
 {"cmd":"quit"}
 ```
+
+`muteFromDevice` (opcional) lo pone MicroSIP cuando el cambio de mute lo originó
+el propio auricular (boom o botón). El puente **aplica igualmente** el `Mute()`
+al dispositivo, también en ese caso: así su micrófono real y su LED siguen a la
+app y no quedan desfasados (el dispositivo solo informa de pulsaciones, no de
+estado). Para que el acuse de ese `Mute()` no se confunda con una pulsación, el
+puente descarta el primer `PhoneMute` que llega en los 250 ms siguientes, y
+cualquier repetición a menos de 300 ms de la anterior (antirrebote).

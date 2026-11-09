@@ -26,6 +26,7 @@
 #include "HidLink.h"
 #include "TeamsPresence.h"
 #include "CallToast.h"
+#include "TrayIcon.h"
 
 #pragma comment(lib, "dwmapi.lib")
 #pragma comment(lib, "shlwapi.lib")
@@ -54,10 +55,10 @@ Json::Value g_calls;
 std::wstring g_appDir;
 std::wstring g_webDir;
 bool g_darkTitle = true;
-NOTIFYICONDATAW g_tray = {};
-bool g_trayAdded = false;
 bool g_quitting = false;
 bool g_ringing = false;
+// Ultima foto tenia una llamada establecida (para el sonido de colgar).
+bool g_lastConfirmed = false;
 int g_ringVolume = 100;
 std::wstring g_ringDevice;
 HWAVEOUT g_ringOut = nullptr;
@@ -80,6 +81,45 @@ std::wstring FindRingtone()
 		}
 	}
 	return std::wstring();
+}
+
+// Busca un WAV de la app original (hangup.wav, etc.): primero junto al exe y
+// luego en las carpetas de MicroSIP, que es donde los deja el instalador.
+std::wstring FindSound(const wchar_t* name)
+{
+	std::wstring local = g_appDir + L"\\" + name;
+	if (GetFileAttributesW(local.c_str()) != INVALID_FILE_ATTRIBUTES) {
+		return local;
+	}
+	const wchar_t* envs[] = { L"LOCALAPPDATA", L"APPDATA" };
+	wchar_t dir[MAX_PATH] = { 0 };
+	for (const wchar_t* env : envs) {
+		if (!GetEnvironmentVariableW(env, dir, MAX_PATH)) {
+			continue;
+		}
+		std::wstring candidate = std::wstring(dir) + L"\\MicroSIP\\" + name;
+		if (GetFileAttributesW(candidate.c_str()) != INVALID_FILE_ATTRIBUTES) {
+			return candidate;
+		}
+	}
+	return std::wstring();
+}
+
+// Aviso de fin de llamada. No hace nada si no hay WAV (PlaySound con
+// SND_NODEFAULT no cae al pitido de Windows).
+void PlayHangupSound()
+{
+	static bool warned = false;
+	std::wstring path = FindSound(L"hangup.wav");
+	if (path.empty()) {
+		if (!warned) {
+			warned = true;
+			PJ_LOG(2, ("SipCore", "hangup.wav no encontrado"));
+		}
+		return;
+	}
+	PlaySoundW(path.c_str(), nullptr, SND_FILENAME | SND_ASYNC | SND_NODEFAULT);
+	PJ_LOG(2, ("SipCore", "hangup.wav"));
 }
 
 bool LoadRingWav()
@@ -280,33 +320,6 @@ void ApplyDarkTitleBar()
 	DwmSetWindowAttribute(g_hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark, sizeof(dark));
 }
 
-void AddTrayIcon(HWND hwnd, HINSTANCE instance)
-{
-	if (g_trayAdded) {
-		return;
-	}
-	ZeroMemory(&g_tray, sizeof(g_tray));
-	g_tray.cbSize = sizeof(g_tray);
-	g_tray.hWnd = hwnd;
-	g_tray.uID = 1;
-	g_tray.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
-	g_tray.uCallbackMessage = WM_APP + 3;
-	g_tray.hIcon = (HICON)LoadImageW(instance, MAKEINTRESOURCEW(101), IMAGE_ICON,
-		GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-	lstrcpynW(g_tray.szTip, L"MicroSIP Modern", ARRAYSIZE(g_tray.szTip));
-	if (Shell_NotifyIconW(NIM_ADD, &g_tray)) {
-		g_trayAdded = true;
-	}
-}
-
-void RemoveTrayIcon()
-{
-	if (g_trayAdded) {
-		Shell_NotifyIconW(NIM_DELETE, &g_tray);
-		g_trayAdded = false;
-	}
-}
-
 void ShowMainWindow(HWND hwnd)
 {
 	ShowWindow(hwnd, SW_SHOW);
@@ -350,7 +363,7 @@ void ShowTrayMenu(HWND hwnd)
 	HMENU menu = CreatePopupMenu();
 	AppendMenuW(menu, MF_STRING, 1, HostText(
 		L"Abrir MicroSIP Modern", L"Open MicroSIP Modern", L"Obre MicroSIP Modern",
-		L"Abrir MicroSIP Modern", L"Ouvrir MicroSIP Modern", L"MicroSIP Modern öffnen"));
+		L"Abrir MicroSIP Modern", L"Ouvrir MicroSIP Modern", L"MicroSIP Modern \u00f6ffnen"));
 	AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
 	AppendMenuW(menu, MF_STRING, 2, HostText(
 		L"Salir", L"Exit", L"Surt", L"Sair", L"Quitter", L"Beenden"));
@@ -563,6 +576,7 @@ void SendSnapshot()
 	// INCOMING/EARLY no cuentan como descolgadas.
 	bool offhook = false;
 	bool ring = false;
+	bool confirmed = false;
 	for (const auto& call : state["calls"]) {
 		std::string callState = call["state"].asString();
 		if (callState.empty() || callState == "null" || callState == "disconnected") {
@@ -573,9 +587,21 @@ void SendSnapshot()
 		}
 		else {
 			offhook = true;
+			if (callState == "confirmed") {
+				confirmed = true;
+			}
 		}
 	}
-	JabraLink::Instance().SendState(offhook, ring, state["muted"].asBool());
+	// Sonido de colgar al terminar una llamada ya establecida (no al rechazar
+	// un timbre, que nunca llega a "confirmed").
+	if (g_lastConfirmed && !confirmed) {
+		PlayHangupSound();
+	}
+	g_lastConfirmed = confirmed;
+	JabraLink::Instance().SendState(offhook, ring, state["muted"].asBool(), confirmed);
+	// Bandeja y boton de la barra: el icono entero cambia (verde con el micro
+	// abierto, rojo tachado si esta silenciado) y fuera de llamada es el normal.
+	TrayIcon::Update(offhook, state["muted"].asBool());
 	UpdateRingtone(ring);
 
 	// Notificacion de llamada (solo si la app no esta delante).
@@ -1148,7 +1174,7 @@ void ResizeWebView()
 void CreateWebView()
 {
 	std::wstring userData = g_appDir + L"\\webview-data";
-	std::wstring url = std::wstring(L"https://") + kVirtualHost + L"/index.html?v=32";
+	std::wstring url = std::wstring(L"https://") + kVirtualHost + L"/index.html?v=33";
 
 	CreateCoreWebView2EnvironmentWithOptions(nullptr, userData.c_str(), nullptr,
 		Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(
@@ -1391,7 +1417,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_DESTROY:
 		PlaySoundW(nullptr, nullptr, 0);
-		RemoveTrayIcon();
+		TrayIcon::Remove();
 		CallToast::Close();
 		HidLink::Instance().Stop();
 		JabraLink::Instance().Stop();
@@ -1513,7 +1539,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR, int showCommand)
 	wc.hIconSm = iconSmall;
 	RegisterClassEx(&wc);
 
-	RECT rect = { 0, 0, 420, 664 };
+	RECT rect = { 0, 0, 380, 590 };
 	DWORD windowStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 	AdjustWindowRect(&rect, windowStyle, FALSE);
 
@@ -1537,7 +1563,19 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, LPWSTR, int showCommand)
 		SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)iconSmall);
 	}
 
-	AddTrayIcon(hwnd, instance);
+	TrayIcon::Add(hwnd, instance, kWindowTitle,
+		HostText(L"MicroSIP Modern - Micr\u00f3fono activo",
+			L"MicroSIP Modern - Microphone on",
+			L"MicroSIP Modern - Micr\u00f2fon actiu",
+			L"MicroSIP Modern - Microfone ativo",
+			L"MicroSIP Modern - Microphone actif",
+			L"MicroSIP Modern - Mikrofon aktiv"),
+		HostText(L"MicroSIP Modern - Micr\u00f3fono silenciado",
+			L"MicroSIP Modern - Microphone muted",
+			L"MicroSIP Modern - Micr\u00f2fon silenciat",
+			L"MicroSIP Modern - Microfone silenciado",
+			L"MicroSIP Modern - Microphone muet",
+			L"MicroSIP Modern - Mikrofon stumm"));
 
 	SipCore::Instance().Init(hwnd, g_appDir);
 	ApplyAlwaysOnTop(SipCore::Instance().AlwaysOnTop());

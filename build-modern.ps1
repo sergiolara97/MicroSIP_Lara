@@ -51,6 +51,10 @@ Copy-Item (Join-Path $hostDir 'web') $outWeb -Recurse -Force
 $ringtone = Join-Path $root 'assets\ringtone.wav'
 if (Test-Path $ringtone) { Copy-Item $ringtone $out -Force }
 
+# Aviso de fin de llamada.
+$hangup = Join-Path $root 'assets\hangup.wav'
+if (Test-Path $hangup) { Copy-Item $hangup $out -Force }
+
 $jabra = Join-Path $root 'dist\MicroSIP-Jabra\JabraBridge'
 $outJabra = Join-Path $out 'JabraBridge'
 if (Test-Path $outJabra) { Remove-Item -Recurse -Force $outJabra }
@@ -62,6 +66,7 @@ New-Item -ItemType Directory -Force -Path $dist | Out-Null
 Copy-Item (Join-Path $out 'MicroSIPModern.exe') $dist -Force
 Copy-Item $outWeb (Join-Path $dist 'web') -Recurse -Force
 if (Test-Path (Join-Path $out 'ringtone.wav')) { Copy-Item (Join-Path $out 'ringtone.wav') $dist -Force }
+if (Test-Path (Join-Path $out 'hangup.wav')) { Copy-Item (Join-Path $out 'hangup.wav') $dist -Force }
 if (Test-Path $outJabra) { Copy-Item $outJabra (Join-Path $dist 'JabraBridge') -Recurse -Force }
 
 # Avisos de licencia junto al binario.

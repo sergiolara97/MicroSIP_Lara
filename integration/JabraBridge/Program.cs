@@ -35,6 +35,7 @@ using Jabra.NET.Sdk.Core.Types;
 using Jabra.NET.Sdk.Modules.CallControl;
 using Jabra.NET.Sdk.Modules.CallControl.Signals;
 using Jabra.NET.Sdk.Properties;
+using Jabra.NET.Sdk.Properties.ChangeDetection;
 
 namespace JabraBridge
 {
@@ -122,7 +123,8 @@ namespace JabraBridge
                             offhook: GetBool(root, "offhook", false),
                             ring: GetBool(root, "ring", false),
                             mute: GetBool(root, "mute", false),
-                            hold: GetBool(root, "hold", false));
+                            hold: GetBool(root, "hold", false),
+                            muteFromDevice: GetBool(root, "muteFromDevice", false));
                         return true;
 
                     case "busylight":
@@ -222,6 +224,9 @@ namespace JabraBridge
         private ICallControl _callControl;
         private IPropertyMap _propertyMap;
         private bool _busylightSupported;
+        // La propiedad microphoneEnabled existe y avisa: se usa su estado
+        // absoluto y se ignoran las pulsaciones relativas del SDK.
+        private volatile bool _muteStateAvailable;
 
         // Último estado pedido por MicroSIP. Se reaplica al conectar un dispositivo.
         private bool? _offhook;
@@ -233,9 +238,18 @@ namespace JabraBridge
 
         // Acuse de PhoneMute: el dispositivo devuelve un PhoneMute tras cada
         // Mute() que le manda el puente. Si se reenvia al host, este lo
-        // interpreta como una pulsacion y el mute oscila en bucle.
-        private bool? _lastMuteApplied;
+        // interpreta como una pulsacion y el mute oscila en bucle. El puente
+        // descarta el primero que llega dentro de la ventana de eco; el resto
+        // se reenvia, para no comerse pulsaciones rapidas del usuario.
+        private bool _lastMuteApplied;
+        private bool _lastOffhook;
         private int _muteAppliedTick;
+        private const int EchoWindowMs = 250;
+
+        // Diagnostico: cuenta y separacion entre PhoneMute para saber si el
+        // dispositivo manda un evento por gesto o uno de cada dos.
+        private int _phoneMuteCount;
+        private int _lastPhoneMuteTick;
 
         public JabraService(Action<string> emit, Action<string> log)
         {
@@ -254,6 +268,20 @@ namespace JabraBridge
                 partnerKey: options.PartnerKey ?? "",
                 appId: string.IsNullOrEmpty(options.AppId) ? "microsip" : options.AppId,
                 appName: string.IsNullOrEmpty(options.AppName) ? "MicroSIP" : options.AppName);
+
+            // Volcado del transporte (protocolo con el conector de Jabra) para
+            // diagnosticar el mute del boom. Se activa creando el fichero
+            // %LOCALAPPDATA%\MicroSIP-Modern\jabra-debug.on y escribe
+            // jabra-transport.log en esa misma carpeta.
+            string debugMarker = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "MicroSIP-Modern", "jabra-debug.on");
+            if (File.Exists(debugMarker))
+            {
+                config.TransportLogging.Enabled = true;
+                config.TransportLogging.LogPath =
+                    Path.Combine(Path.GetDirectoryName(debugMarker), "jabra-transport.log");
+            }
 
             _api = Init.InitManualSdk(config);
             _callControlFactory = new CallControlFactory(_api);
@@ -355,6 +383,7 @@ namespace JabraBridge
                 _subscriptions.Add(callControl.OnDisconnect.Subscribe(_ => OnCallControlDisconnected(device)));
 
                 await SetupBusylightAsync(device);
+                await SetupMuteStateAsync(device);
 
                 // Reaplicar el estado real de MicroSIP al dispositivo recién conectado.
                 ReapplyState();
@@ -413,12 +442,39 @@ namespace JabraBridge
             }
 
             // PhoneMute que llega poco despues de un Mute() nuestro es el
-            // acuse del dispositivo, no una pulsacion del usuario.
+            // acuse del dispositivo, no una pulsacion del usuario. Solo se
+            // descarta el primero de la ventana: si el usuario vuelve a tocar
+            // el boom enseguida, esa pulsacion tiene que llegar al host.
             if (signal.Type == SignalType.PhoneMute)
             {
-                int tick = Volatile.Read(ref _muteAppliedTick);
-                if (tick != 0 && unchecked((uint)(Environment.TickCount - tick)) < 2000)
+                // Con el estado absoluto disponible, las pulsaciones relativas
+                // del SDK solo aportan ruido.
+                if (_muteStateAvailable)
                 {
+                    return;
+                }
+                int number = Interlocked.Increment(ref _phoneMuteCount);
+                int previous = Interlocked.Exchange(ref _lastPhoneMuteTick, Environment.TickCount);
+                int delta = previous == 0 ? 0 : Environment.TickCount - previous;
+                _log("[jabra] PhoneMute #" + number + " value=" + signal.Value +
+                     " change=" + signal.ValueChangeType + " dt=" + delta + "ms");
+
+                // Antirrebote: un solo gesto del boom no produce dos pulsaciones
+                // separadas por menos de 300 ms. Si llegan dos, la segunda es
+                // ruido del dispositivo y dejaria el mute sin cambiar (dos
+                // toggles), que es el "hay que hacer el gesto dos veces".
+                if (previous != 0 && delta < 300)
+                {
+                    _log("[jabra] PhoneMute repetido (" + delta + " ms): descartado");
+                    return;
+                }
+
+                int tick = Volatile.Read(ref _muteAppliedTick);
+                if (tick != 0 && unchecked((uint)(Environment.TickCount - tick)) < EchoWindowMs)
+                {
+                    _log("[jabra] eco PhoneMute descartado a " +
+                         unchecked((uint)(Environment.TickCount - tick)) + " ms");
+                    Interlocked.Exchange(ref _muteAppliedTick, 0);
                     return;
                 }
             }
@@ -434,6 +490,17 @@ namespace JabraBridge
             try
             {
                 _propertyFactory = _propertyFactory ?? await _propertyModule.CreatePropertyFactory();
+                if (_propertyFactory != null)
+                {
+                    try
+                    {
+                        _log("[jabra] propiedades: " + string.Join(",", _propertyFactory.PropertyNames));
+                    }
+                    catch (Exception ex)
+                    {
+                        _log("[jabra] no se pudieron listar las propiedades: " + ex.Message);
+                    }
+                }
                 IPropertyMap map = await _propertyFactory.CreateProperties(device, BusylightProperties);
                 if (map == null)
                 {
@@ -461,9 +528,10 @@ namespace JabraBridge
             }
         }
 
-        public void ApplyState(bool offhook, bool ring, bool mute, bool hold)
+        public void ApplyState(bool offhook, bool ring, bool mute, bool hold, bool muteFromDevice)
         {
             ICallControl callControl;
+            bool newCall;
             lock (_stateLock)
             {
                 callControl = _callControl;
@@ -471,6 +539,11 @@ namespace JabraBridge
                 _ring = ring;
                 _mute = mute;
                 _hold = hold;
+                // Al empezar una llamada se fuerza el estado del mute para que
+                // el auricular y MicroSIP arranquen igual: el dispositivo solo
+                // informa de pulsaciones y un desfase no se corrige solo.
+                newCall = offhook && !_lastOffhook;
+                _lastOffhook = offhook;
             }
 
             if (callControl == null)
@@ -482,10 +555,15 @@ namespace JabraBridge
             {
                 callControl.OffHook(offhook);
                 callControl.Ring(ring);
-                if (_lastMuteApplied != mute)
+                // Se aplica siempre el mute al auricular (tambien cuando el
+                // cambio viene del boom): asi su micro real y el LED siguen a
+                // la app y no quedan desfasados. El filtro de eco del puente
+                // evita que el acuse de este Mute() se tome por una pulsacion.
+                if (newCall || _lastMuteApplied != mute)
                 {
                     _lastMuteApplied = mute;
                     Interlocked.Exchange(ref _muteAppliedTick, Environment.TickCount);
+                    _log("[jabra] Mute(" + (mute ? "true" : "false") + ")");
                     callControl.Mute(mute);
                 }
                 callControl.Hold(hold);
@@ -521,8 +599,88 @@ namespace JabraBridge
             });
         }
 
-        private async Task WriteBusylightAsync(bool on)
+        // Estado absoluto del microfono. La senal PhoneMute que manda el SDK al
+        // mover el boom es relativa, asi que se intenta leer el estado real de
+        // las propiedades del dispositivo (cada una con su propio mapa: juntas
+        // lanzan NullReferenceException en el SDK).
+        private async Task SetupMuteStateAsync(IDevice device)
         {
+            try
+            {
+                _propertyFactory = _propertyFactory ?? await _propertyModule.CreatePropertyFactory();
+            }
+            catch (Exception ex)
+            {
+                _log("[jabra] sin fabrica de propiedades: " + ex.Message);
+                return;
+            }
+            if (_propertyFactory == null)
+            {
+                return;
+            }
+
+            foreach (string name in new[] { "microphoneEnabled", "fullMuteEnabled", "muteChanged" })
+            {
+                try
+                {
+                    IPropertyMap map = await _propertyFactory.CreateProperties(device, new[] { name });
+                    if (map == null)
+                    {
+                        _log("[jabra] " + name + ": sin mapa");
+                        continue;
+                    }
+                    IPropertyMapWatcher watcher = await _propertyModule.CreatePropertyMapWatcher(map);
+                    if (watcher == null)
+                    {
+                        _log("[jabra] " + name + ": sin watcher");
+                        continue;
+                    }
+                    _subscriptions.Add(watcher.PropertyChanges.Subscribe(OnMutePropertyChanged));
+                    _log("[jabra] vigilando " + name);
+                }
+                catch (Exception ex)
+                {
+                    _log("[jabra] " + name + ": " + ex.Message);
+                }
+            }
+        }
+
+        private void OnMutePropertyChanged(PropertyUpdate update)
+        {
+            if (update == null)
+            {
+                return;
+            }
+
+            string name = update.Name ?? "?";
+            bool asBool = false;
+            bool isBool = false;
+            try
+            {
+                if (update.NewValue != null)
+                {
+                    asBool = update.NewValue.AsBoolean();
+                    isBool = true;
+                }
+            }
+            catch
+            {
+                // La propiedad no es booleana (muteChanged puede ser un evento).
+            }
+            _log("[jabra] prop " + name + " = " + (isBool ? (asBool ? "true" : "false") : "?"));
+
+            if (name != "microphoneEnabled" || !isBool)
+            {
+                return;
+            }
+
+            _muteStateAvailable = true;
+            // La senal del SDK se llama PhoneMute y su value es "silenciado".
+            Emit("{\"ev\":\"signal\",\"name\":\"PhoneMute\",\"value\":" +
+                 (asBool ? "false" : "true") + ",\"change\":\"Absolute\"}");
+        }
+
+        private async Task WriteBusylightAsync(bool on)        {
             IPropertyMap map;
             lock (_stateLock)
             {
@@ -555,7 +713,7 @@ namespace JabraBridge
 
             if (offhook.HasValue && ring.HasValue && mute.HasValue && hold.HasValue)
             {
-                ApplyState(offhook.Value, ring.Value, mute.Value, hold.Value);
+                ApplyState(offhook.Value, ring.Value, mute.Value, hold.Value, muteFromDevice: false);
             }
         }
 

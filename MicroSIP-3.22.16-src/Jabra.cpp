@@ -52,6 +52,10 @@ static bool s_busylightSupported = false;
 // Estado fisico del auricular (gancho / mute)
 static bool s_offhook = false;
 static bool s_mute = false;
+// El proximo estado que se manda al puente trae un mute originado por el
+// propio auricular: el puente no debe devolverlo (generaria un eco que se
+// confunde con una pulsacion y una pulsacion rapida se perderia).
+static bool s_muteFromDevice = false;
 
 // Estado de MicroSIP que se refleja en el auricular
 static bool s_callActive = false;
@@ -148,6 +152,9 @@ static void SendState(bool force)
 		return;
 	}
 
+	const bool muteFromDevice = s_muteFromDevice;
+	s_muteFromDevice = false;
+
 	if (!force && s_lastValid
 		&& s_lastOffhook == s_callActive
 		&& s_lastRing == s_callingRing
@@ -157,11 +164,12 @@ static void SendState(bool force)
 	}
 
 	CStringA json;
-	json.Format("{\"cmd\":\"state\",\"offhook\":%s,\"ring\":%s,\"mute\":%s,\"hold\":%s}",
+	json.Format("{\"cmd\":\"state\",\"offhook\":%s,\"ring\":%s,\"mute\":%s,\"hold\":%s%s}",
 		s_callActive ? "true" : "false",
 		s_callingRing ? "true" : "false",
 		s_mute ? "true" : "false",
-		s_hold ? "true" : "false");
+		s_hold ? "true" : "false",
+		muteFromDevice ? ",\"muteFromDevice\":true" : "");
 
 	WriteLine(json);
 
@@ -267,6 +275,7 @@ static void HandleSignal(const Json::Value& root)
 			return;
 		}
 		s_mute = muted;
+		s_muteFromDevice = true;
 
 		LogInfo(muted ? _T("Jabra: microfono silenciado") : _T("Jabra: microfono activo"));
 

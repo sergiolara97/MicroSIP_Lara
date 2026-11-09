@@ -581,11 +581,19 @@ function historyRow(item) {
   const missed = item.type === 'missed';
   const label = displayName(item.name || item.number);
   const dir = missed ? t('Perdida') : item.type === 'in' ? t('Entrante') : t('Saliente');
+  // Perdida: solo icono (la palabra queda en el tooltip y para lectores de
+  // pantalla), asi el aviso no compite con el nombre.
+  const kind = missed
+    ? `<span class="badge-missed" role="img" aria-label="${dir}" title="${dir}">` +
+      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 8 16"/><path d="M8 10v6h6"/></svg>` +
+      `</span>`
+    : `<span class="sub-dir">${dir}</span>`;
+  const dur = item.duration ? ` <span class="sub-sep">·</span> ${formatDuration(item.duration)}` : '';
   row.innerHTML = `
     <div class="avatar sm">${initials(label)}</div>
     <div class="row-main">
       <div class="row-title">${escapeHtml(label)}</div>
-      <div class="row-sub">${missed ? '<span class="badge-missed">' + dir + '</span>' : dir} · ${formatTime(item.time)}${item.duration ? ' · ' + formatDuration(item.duration) : ''}</div>
+      <div class="row-sub">${kind} <span class="sub-sep">·</span> ${formatTime(item.time)}${dur}</div>
     </div>
     <div class="row-meta">
       <button class="row-call" title="Llamar">

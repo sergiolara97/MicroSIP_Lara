@@ -35,12 +35,14 @@ Antes de cada commit:
   `build-microsip.ps1`. Ignorada por git: **cualquier cambio ahí se pierde**.
 - `MicroSIP-Modern/host/` — app moderna: `main.cpp`, `SipCore.cpp/.h`,
   `JabraLink.cpp/.h`, `HidLink.cpp/.h`, `TeamsPresence.cpp/.h`,
-  `CallToast.cpp/.h`, `web/`. El `.vcxproj` compila además `jsoncpp` desde
+  `CallToast.cpp/.h`, `TrayIcon.cpp/.h`, `web/`. El `.vcxproj` compila además `jsoncpp` desde
   `MicroSIP-3.22.16-src/lib/jsoncpp` y `sqlite3.c` desde
   `pjproject-2.15.1/third_party`.
 - `integration/JabraBridge/` — puente .NET (`net472`, SDK Jabra 4.10.1).
 - `dist/MicroSIP-Jabra/`, `dist/MicroSIP-Modern/` — binarios **versionados en
-  git**: recompilar modifica ficheros rastreados.
+  git**: recompilar modifica ficheros rastreados. Los WAV de `assets/`
+  (`ringtone.wav`, `hangup.wav`) también se versionan con su copia en
+  `dist/MicroSIP-Modern/`: al añadir un sonido hay que añadir los dos.
 - Referencias: `README.md`, `MicroSIP-Modern/README.md`,
   `docs/jabra-integration.md`.
 
@@ -75,7 +77,7 @@ Antes de cada commit:
 
 `build-modern.ps1` deja el paquete en `dist\`, **no** actualiza la copia que se
 usa a diario. Para probar hay que copiar a `%LOCALAPPDATA%\MicroSIP-Modern\`:
-`MicroSIPModern.exe` + `web\` + `ringtone.wav` (+ `JabraBridge\`). El
+`MicroSIPModern.exe` + `web\` + `ringtone.wav` + `hangup.wav` (+ `JabraBridge\`). El
 `microsip.ini` de ahí **no se toca** al copiar.
 
 Lanzar con el `MicroSIP Modern.cmd` de esa carpeta (fija `/D`) o con el
@@ -181,7 +183,25 @@ verificar posición, visibilidad y `WS_EX_TOPMOST`.
   mientras suena (`PollDtmfTone`); si se deja conectado el micro no se cierra.
 - Timbre: `assets/ringtone.wav` con `waveOut` (bucle), salida `ringDevice` y
   `volumeRing`. No abre el micrófono.
-- Ventana inicial **420x664** (cliente): el dialer está calculado para ese alto.
+- **`tx_level`/`rx_level` del puerto 0 están cruzados respecto al nombre**: en el
+  puerto del puente, `rx_level` es lo que **sale** del micrófono y `tx_level` lo
+  que **entra** al altavoz. `SetMute()` mueve `rx_level` y `SetMuteOutput()`
+  `tx_level`; al revés se silenciaba la llamada en vez del micrófono.
+  `LogConfLevels()` deja `slot0 (...) tx=... rx=...` en el log para comprobarlo
+  sin oído.
+- **Indicador de micro en bandeja y barra de tareas** (`TrayIcon.cpp/.h`): fuera
+  de llamada, el icono de la app; en llamada, cuadrado verde con micrófono o
+  rojo tachado si está silenciado, y overlay con `ITaskbarList3`. El icono se
+  dibuja entero con **GDI+** (GDI ignora el alfa de 32 bits; a 16 px una
+  insignia en la esquina no se lee). `SendSnapshot()` llama a
+  `TrayIcon::Update(offhook, muted)`.
+- Al colgar una llamada establecida suena `assets/hangup.wav`: `FindSound()` lo
+  busca junto al exe y `build-modern.ps1` lo copia a `dist\`.
+- Ventana inicial **380x590** (cliente): el dialer está calculado para ese alto.
+- En la pantalla de llamada la rejilla de acciones y el botón de colgar son
+  **fijos**: lo que cede espacio es la cabecera (`.incall-top`), que además se
+  compacta sola con `:has()` cuando hay grabación, espera o conferencia. Si
+  añades filas ahí, comprueba que el colgar sigue entero.
 - El `<style>` de `index.html` termina con un bloque que anula el andamiaje del
   prototipo (`.stage*` → `display:none`); va al final a propósito.
 - Ajustes `[Settings]`: `autoAnswer`, `callWaiting`, `forwarding`(`1`/`all`),
@@ -255,8 +275,8 @@ llamada**: al contestar o al colgar desaparece. Ajustes `callToast` (`1`),
 - **Sin ventana propietaria a propósito**: una ventana hija de la principal se
   ocultaría con ella cuando la app está en la bandeja.
 - Se coloca en la esquina del **área de trabajo** (`MONITORINFO.rcWork`) del
-  monitor de la ventana principal, escalada con `GetDpiForWindow` (el manifiesto
-  es PerMonitorV2).
+  monitor que elija `callToastScreen`, escalada con el DPI de **ese** monitor
+  (`DpiForMonitor`, no `GetDpiForWindow` del hilo).
 - `SipCore::ContactNameFor()` resuelve el nombre de la agenda comparando los
   últimos 9 dígitos (el PBX manda a veces prefijos distintos).
 - Verificado con llamadas reales: app delante → no aparece; minimizada → aparece
@@ -309,9 +329,30 @@ manda al auricular se calcula en `SendSnapshot()`.
   (`GetCallsCount()` excluye INCOMING/EARLY por defecto).
 - Bajar el boom para contestar llega como `HookSwitch` (y en algunos modelos
   como `PhoneMute`); ambos contestan si hay una entrante.
-- `PhoneMute` es también el acuse de cada `Mute()` que manda el puente. Si se
-  reenvía, el host lo trata como una pulsación y el mute oscila en bucle: el
-  puente descarta el `PhoneMute` que llega menos de 2 s después de un `Mute()`.
+- `PhoneMute` es también el acuse de cada `Mute()` que manda el puente. Para que
+  no se confunda con una pulsación, el puente descarta el primer `PhoneMute` de
+  los 250 ms siguientes a su `Mute()` y cualquier repetición a menos de 300 ms
+  de la anterior.
+- **El estado se aplica siempre al auricular**, también cuando el gesto viene del
+  boom: si solo se anota, un desfase entre su micro real y la app no se corrige
+  nunca (el dispositivo no informa de estado, solo de pulsaciones).
+- **El Evolve2 40 manda `PhoneMute` espurios**: al abrirse el audio de la
+  llamada (justo al descolgar) y al colgar. Si se toglean, el estado queda
+  desplazado un paso y el primer gesto real parece hacer lo contrario. Se
+  ignoran si no hay ninguna llamada o si hace <1,2 s que la llamada pasó a
+  `CONFIRMED`; los del timbre **no** se filtran, porque bajar el boom durante
+  el timbre es lo que contesta.
+- **El dispositivo no expone estado absoluto**: `microphoneEnabled`,
+  `fullMuteEnabled` y `muteChanged` existen en el SDK pero sus watchers no
+  notifican nunca; el boom solo manda pulsación relativa. No pierdas tiempo
+  intentando leer el estado real: hay que toglear.
+- **Depurar el protocolo**: crear `%LOCALAPPDATA%\MicroSIP-Modern\jabra-debug.on`
+  hace que el puente vuelque todo el transporte a `jabra-transport.log` de esa
+  carpeta (los eventos HID llegan como `usagePage 65328, usage 47`, siempre
+  `value=1`, sin el 0 de soltar). Bórralo al terminar.
+- **El mute no se hereda entre llamadas**: al pasar a `CONFIRMED`, `SipCore` hace
+  `SetMute(false)` y el puente fuerza `Mute()` al empezar la llamada, para que
+  ambos arranquen iguales.
 - `microsip-modern.log` lo escribe pjsua **sin `flush`**: durante una prueba en
   vivo puede ir con retraso; al cerrar la app se vuelca.
 - Para probar una entrante real sin segunda extensión, manda un `INVITE` UDP al

@@ -17,7 +17,7 @@ public:
 	bool IsRunning() const { return running_; }
 
 	// Estado que se envia al auricular (LEDs / busylight).
-	void SendState(bool offhook, bool ring, bool mute);
+	void SendState(bool offhook, bool ring, bool mute, bool confirmed);
 
 	// Procesa una linea JSON recibida del puente (se llama en el hilo UI).
 	void HandleEvent(const std::string& json);
@@ -42,6 +42,14 @@ private:
 	bool lastMute_ = false;
 	// Estado fisico del gancho segun el SDK (no el que se le manda).
 	bool hookOff_ = false;
+	// Momento en que la llamada paso a establecida: el auricular manda un
+	// PhoneMute al abrirse el audio y no es un gesto del usuario.
+	bool lastConfirmed_ = false;
+	DWORD confirmedTick_ = 0;
+	// El proximo estado que se mande al puente trae un mute originado por el
+	// propio dispositivo (boom o boton del auricular): asi el puente no se lo
+	// devuelve y no se genera eco.
+	bool muteFromDevice_ = false;
 	// Momento en que empezo a timbrar la llamada entrante actual.
 	DWORD ringSince_ = 0;
 };

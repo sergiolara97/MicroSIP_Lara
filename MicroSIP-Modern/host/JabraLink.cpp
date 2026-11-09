@@ -186,15 +186,25 @@ void JabraLink::Stop()
 	lastValid_ = false;
 }
 
-void JabraLink::SendState(bool offhook, bool ring, bool mute)
+void JabraLink::SendState(bool offhook, bool ring, bool mute, bool confirmed)
 {
 	if (!running_) {
 		return;
 	}
+	// El mute puede venir del propio auricular (boom o boton). En ese caso se
+	// avisa al puente para que no lo devuelva: el dispositivo ya esta en ese
+	// estado y devolverlo generaba un eco que el filtro del puente confundia
+	// con una pulsacion.
+	const bool muteFromDevice = muteFromDevice_;
+	muteFromDevice_ = false;
+	DWORD now = GetTickCount();
+	if (confirmed != lastConfirmed_) {
+		lastConfirmed_ = confirmed;
+		confirmedTick_ = now;
+	}
 	if (lastValid_ && lastOffhook_ == offhook && lastRing_ == ring && lastMute_ == mute) {
 		return;
 	}
-	DWORD now = GetTickCount();
 	if (ring && (!lastValid_ || !lastRing_)) {
 		ringSince_ = now;
 	}
@@ -204,8 +214,9 @@ void JabraLink::SendState(bool offhook, bool ring, bool mute)
 	lastMute_ = mute;
 
 	char buffer[256];
-	sprintf_s(buffer, "{\"cmd\":\"state\",\"offhook\":%s,\"ring\":%s,\"mute\":%s,\"hold\":false}",
-		offhook ? "true" : "false", ring ? "true" : "false", mute ? "true" : "false");
+	sprintf_s(buffer, "{\"cmd\":\"state\",\"offhook\":%s,\"ring\":%s,\"mute\":%s,\"hold\":false%s}",
+		offhook ? "true" : "false", ring ? "true" : "false", mute ? "true" : "false",
+		muteFromDevice ? ",\"muteFromDevice\":true" : "");
 	WriteLine(buffer);
 
 	if (busylightSupported_) {
@@ -220,6 +231,9 @@ void JabraLink::HandleEvent(const std::string& json)
 	Json::Value root;
 	Json::Reader reader;
 	if (!reader.parse(json, root)) {
+		// El puente manda sus trazas por stderr, que va al mismo pipe que los
+		// eventos: se registran tal cual para poder diagnosticar sin depurador.
+		PJ_LOG(2, ("JabraBridge", "%s", json.c_str()));
 		return;
 	}
 
@@ -267,17 +281,53 @@ void JabraLink::HandleEvent(const std::string& json)
 		// oscile en bucle; el puente filtra ese acuse antes de enviarlo.
 		DWORD now = GetTickCount();
 
-		// Bajar el boom para contestar tambien llega como PhoneMute (el
-		// dispositivo no manda HookSwitch en todos los modelos): si hay una
-		// entrante timbrando, se contesta y se deja el micro sin silenciar.
+		// Estado absoluto del micro (propiedad microphoneEnabled del SDK): es la
+		// verdad del dispositivo, se aplica tal cual aunque coincida con una
+		// transicion de llamada. Con esto ya no importa que la pulsacion
+		// relativa llegue solo en un sentido.
+		if (change == "Absolute") {
+			if (value != core.Muted()) {
+				muteFromDevice_ = true;
+				PJ_LOG(2, ("JabraLink", "mute absoluto -> %d", value ? 1 : 0));
+				core.SetMute(value);
+			}
+			return;
+		}
+
+		// Sin ninguna llamada no hay gesto que aplicar: el auricular manda un
+		// PhoneMute al terminar la llamada y no debe cambiar el estado que se
+		// usara en la siguiente.
+		if (!core.HasAnyCall()) {
+			PJ_LOG(2, ("JabraLink", "PhoneMute sin llamada: ignorado"));
+			return;
+		}
+
+		// Bajar el boom para contestar llega como PhoneMute en algunos modelos:
+		// si hay una entrante timbrando, se contesta y se deja el micro sin
+		// silenciar. Se exige algo mas de 2 s de timbre para no confundirlo con
+		// el PhoneMute que manda el propio auricular al empezar a sonar.
 		if (core.HasIncomingCall() && ringSince_ != 0 && (DWORD)(now - ringSince_) > 1200) {
+			muteFromDevice_ = true;
 			core.SetMute(false);
 			core.AnswerIncoming();
 			return;
 		}
 
-		bool muted = (change == "Absolute") ? value : !core.Muted();
+		// Al descolgar se abre el audio y el auricular manda un PhoneMute que no
+		// es un gesto: llega ~100 ms despues de establecerse la llamada. Si se
+		// toglea, el estado queda desplazado justo al empezar y el primer gesto
+		// real parece hacer lo contrario. La ventana es corta a proposito: un
+		// gesto deliberado no llega antes.
+		if (lastConfirmed_ && confirmedTick_ != 0
+			&& (DWORD)(now - confirmedTick_) < 1200) {
+			PJ_LOG(2, ("JabraLink", "PhoneMute de apertura de audio: ignorado"));
+			return;
+		}
+
+		bool muted = !core.Muted();
 		if (muted != core.Muted()) {
+			muteFromDevice_ = true;
+			PJ_LOG(2, ("JabraLink", "phone mute -> %d (from device)", muted ? 1 : 0));
 			core.SetMute(muted);
 		}
 	}

@@ -2018,7 +2018,10 @@ void SipCore::SetMute(bool on)
 	if (!started_) {
 		return;
 	}
-	pjsua_conf_adjust_tx_level(0, on ? 0.0f : volumeIn_ / 100.0f);
+	// rx_level es lo que el puerto ENVIA al puente: el micro. Con tx_level se
+	// silenciaba el altavoz, que es justo al reves.
+	pjsua_conf_adjust_rx_level(0, on ? 0.0f : volumeIn_ / 100.0f);
+	LogConfLevels();
 }
 
 void SipCore::SetMuteOutput(bool on)
@@ -2028,7 +2031,24 @@ void SipCore::SetMuteOutput(bool on)
 	if (!started_) {
 		return;
 	}
-	pjsua_conf_adjust_rx_level(0, on ? 0.0f : volumeOut_ / 100.0f);
+	// tx_level es lo que el puerto RECIBE del puente: el altavoz.
+	pjsua_conf_adjust_tx_level(0, on ? 0.0f : volumeOut_ / 100.0f);
+	LogConfLevels();
+}
+
+// Deja en el log los niveles reales del puerto 0 (tarjeta de sonido) para
+// poder comprobar que el mute toca la direccion correcta sin necesidad de oido.
+void SipCore::LogConfLevels()
+{
+	if (!started_) {
+		return;
+	}
+	pjsua_conf_port_info info;
+	if (pjsua_conf_get_port_info(0, &info) != PJ_SUCCESS) {
+		return;
+	}
+	PJ_LOG(2, ("SipCore", "slot0 (%.*s) tx=%.2f rx=%.2f",
+		(int)info.name.slen, info.name.ptr, info.tx_level_adj, info.rx_level_adj));
 }
 
 void SipCore::SendDtmf(const std::string& digit)
@@ -2130,13 +2150,13 @@ void SipCore::SetVolume(bool output, int value)
 	if (output) {
 		volumeOut_ = value;
 		if (started_) {
-			pjsua_conf_adjust_rx_level(0, mutedOut_ ? 0.0f : value / 100.0f);
+			pjsua_conf_adjust_tx_level(0, mutedOut_ ? 0.0f : value / 100.0f);
 		}
 	}
 	else {
 		volumeIn_ = value;
 		if (started_) {
-			pjsua_conf_adjust_tx_level(0, muted_ ? 0.0f : value / 100.0f);
+			pjsua_conf_adjust_rx_level(0, muted_ ? 0.0f : value / 100.0f);
 		}
 	}
 }
@@ -2897,6 +2917,13 @@ void msip_on_call_state(pjsua_call_id call_id, pjsip_event* event)
 		}
 	}
 	else if (ci.state == PJSIP_INV_STATE_CONFIRMED) {
+		// Cada llamada empieza sin silenciar. Si no, el estado heredado de la
+		// llamada anterior no tiene por que coincidir con el boom del auricular
+		// (que es el que manda en el dispositivo) y, como el Jabra solo informa
+		// de pulsaciones, el desfase ya no se corrige.
+		if (core.Muted()) {
+			core.SetMute(false);
+		}
 		core.StartRecordingIfNeeded();
 		// Conferencia: la segunda llamada ya tiene audio; se unen los puertos.
 		if (core.pendingConference_) {
