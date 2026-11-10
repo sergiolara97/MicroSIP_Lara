@@ -27,9 +27,6 @@
 
 namespace {
 
-// Margen minimo entre dos comandos de estado de Teams (ms).
-constexpr DWORD kTeamsMinGapMs = 2000;
-
 std::string WideToUtf8(const std::wstring& value)
 {
 	if (value.empty()) {
@@ -312,12 +309,8 @@ void SipCore::Shutdown()
 		return;
 	}
 	// Si se cierra la app en mitad de una llamada, Teams no debe quedarse Ocupado.
-	if (teamsBusy_ || teamsPending_) {
-		teamsBusy_ = false;
-		teamsPending_ = false;
-		TeamsPresence::Restore();
-	}
 	started_ = false;
+	TeamsPresence::Stop();
 	pjsua_call_hangup_all();
 	if (toneSlot_ != -1) {
 		pjsua_conf_remove_port(toneSlot_);
@@ -1684,20 +1677,16 @@ bool SipCore::HasIncomingCall()
 }
 
 // Sincroniza el estado de Microsoft Teams con la llamada en curso: Ocupado
-// mientras hay una llamada establecida, Disponible al colgar. Se llama desde
-// el callback de estado de llamada de pjsua.
+// mientras hay una llamada establecida, y el estado que hubiera antes al
+// colgar. TeamsPresence lo aplica en su propio hilo (leer el estado con UI
+// Automation tarda 1-2 s y aqui se bloqueaba el callback de pjsua).
 void SipCore::UpdateTeamsPresence()
 {
-	if (GetSetting("teamsPresence", "1") != "1") {
-		if (teamsBusy_ || teamsPending_) {
-			teamsPending_ = false;
-			ApplyTeamsState(false);
-		}
+	if (!started_) {
 		return;
 	}
-
 	bool connected = false;
-	if (started_) {
+	if (GetSetting("teamsPresence", "1") == "1") {
 		pjsua_call_id ids[PJSUA_MAX_CALLS];
 		unsigned count = PJSUA_MAX_CALLS;
 		if (pjsua_enum_calls(ids, &count) == PJ_SUCCESS) {
@@ -1711,33 +1700,7 @@ void SipCore::UpdateTeamsPresence()
 			}
 		}
 	}
-
-	if (connected == teamsBusy_ && connected == teamsPending_) {
-		return;
-	}
-	teamsPending_ = connected;
-
-	// Dos ms-teams.exe lanzados casi a la vez se pisan y el segundo se pierde
-	// (una llamada de un segundo se quedaba en Ocupado). Se deja pasar un
-	// margen y se aplica solo el estado final.
-	DWORD since = GetTickCount() - teamsCmdTick_;
-	if (teamsCmdTick_ != 0 && since < kTeamsMinGapMs) {
-		KillTimer(hwnd_, MSIP_TIMER_TEAMS);
-		SetTimer(hwnd_, MSIP_TIMER_TEAMS, kTeamsMinGapMs - since, nullptr);
-		return;
-	}
-	ApplyTeamsState(connected);
-}
-
-void SipCore::ApplyTeamsState(bool busy)
-{
-	teamsBusy_ = busy;
-	teamsPending_ = busy;
-	teamsCmdTick_ = GetTickCount();
-	KillTimer(hwnd_, MSIP_TIMER_TEAMS);
-	// Se aplica en el hilo de la ventana: leer el estado de Teams usa UI
-	// Automation y no debe bloquear el hilo de pjsua.
-	PostMessageW(hwnd_, MSIP_TEAMS_STATE_MSG, busy ? 1 : 0, 0);
+	TeamsPresence::Apply(connected);
 }
 
 void SipCore::ApplySoundDevice()
@@ -2002,12 +1965,6 @@ void SipCore::OnTimer(UINT_PTR id)
 {
 	if (id == MSIP_TIMER_DTMF) {
 		PollDtmfTone();
-	}
-	else if (id == MSIP_TIMER_TEAMS) {
-		KillTimer(hwnd_, MSIP_TIMER_TEAMS);
-		if (teamsPending_ != teamsBusy_) {
-			ApplyTeamsState(teamsPending_);
-		}
 	}
 }
 

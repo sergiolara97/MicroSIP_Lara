@@ -143,12 +143,11 @@ verificar posición, visibilidad y `WS_EX_TOPMOST`.
   `index.html` (`app.js?v=N`, `lang.js?v=N`).
 - Mensajes: `WM_APP+1` snapshot, `+2` evento Jabra, `+3` bandeja, `+4` mostrar
   ventana, `+5` comandos IPC, `+6` botón HID (`MSIP_HID_BUTTON_MSG`),
-  `+7` estado de Teams (`MSIP_TEAMS_STATE_MSG`), `+8`/`+9` contestar/colgar
-  desde la notificación (`MSIP_TOAST_ANSWER`/`MSIP_TOAST_HANGUP`), `+10` abrir
-  la ventana desde la notificación (`MSIP_TOAST_OPEN`).
-  Timers: `1` DTMF, `3` fin de timbre, `4` pulsación larga HID, `5` estado de
-  Teams (retardo de 2 s). `MSIP_TIMER_AUTOANSWER` (`2`) está definido pero no
-  se usa.
+  `+8`/`+9` contestar/colgar desde la notificación
+  (`MSIP_TOAST_ANSWER`/`MSIP_TOAST_HANGUP`), `+10` abrir la ventana desde la
+  notificación (`MSIP_TOAST_OPEN`).
+  Timers: `1` DTMF, `3` fin de timbre, `4` pulsación larga HID.
+  `MSIP_TIMER_AUTOANSWER` (`2`) está definido pero no se usa.
 - Cerrar (X/Alt+F4) **oculta a la bandeja**; salir de verdad = menú → Salir,
   bandeja → Salir o `cmd:"quit"` (`DestroyWindow`).
 - `microsip.ini` propio **junto al exe** (no el de la app original), en
@@ -298,21 +297,29 @@ llamada `CONFIRMED` y **al colgar restaura el estado que hubiera** antes (ajuste
   `--set-presence-to-away`, `--set-presence-to-offline`,
   `--set-presence-to-be-right-back`, `--reset-presence`. Aplican el estado con la
   sesión ya iniciada del usuario: sin Graph ni permisos.
-- **Dos `ms-teams.exe` seguidos se pisan y el segundo se pierde** (una llamada de
-  1 s se quedaba en Ocupado). Por eso hay margen de 2 s y se aplica solo el
-  estado final: `MSIP_TIMER_TEAMS` (timer `5`) + `teamsPending_`.
+- **Todo el trabajo va en un hilo propio** (`TeamsPresence.cpp`). Leer el estado
+  con UI Automation tarda 1-2 s; hacerlo en el hilo de la ventana retrasaba el
+  `--set-presence-to-busy` hasta después de colgar y el `available` se lanzaba
+  0,3 s después: Teams se quedaba **Ocupado** en llamadas muy cortas (login de
+  centralita). `Apply()` solo anota el estado pedido y despierta al hilo.
+- **Si la llamada termina mientras se lee el estado previo, no se toca Teams**:
+  no llega a ponerse Ocupado. Es el caso de las llamadas de menos de ~2 s.
+- **Dos `ms-teams.exe` seguidos se pisan y el segundo se pierde.** El hilo espera
+  a que termine el lanzador y deja pasar 2 s (`kMinGapMs`) antes del siguiente
+  comando. Si el estado cambia mientras espera, se aplica solo el último.
 - **Al colgar se restaura el estado que había**, no siempre Disponible: al entrar
   en llamada se lee el nombre accesible del botón de perfil (`"Tu perfil, estado
   No molestar"`) y se traduce al argumento correspondiente; si era automático
   (en reunión, en llamada, presentando) se usa `--reset-presence` y Teams lo
-  recalcula. La lectura usa UI Automation y corre en el hilo de la ventana
-  (`MSIP_TEAMS_STATE_MSG`), no en el de pjsua.
+  recalcula.
+- **Tras restaurar se verifica** con UIA que no siga en Ocupado y se reintenta un
+  par de veces: si Teams pierde el comando, no se queda colgado.
 - **`FindWindowW(L"TeamsWebView")` devuelve otra ventana** de Teams (hay varias
   con la misma clase): hay que enumerar con `EnumWindows` y probar las que
   tienen título hasta encontrar la que expone el botón de perfil.
 - Si Teams no está abierto **no se lanza** (el comando lo arrancaría): se omite.
-  Al cerrar la app en mitad de una llamada se restaura el estado guardado en
-  `Shutdown()`.
+  Al cerrar la app en mitad de una llamada, `TeamsPresence::Stop()` restaura el
+  estado guardado y espera al hilo antes de `pjsua_destroy()`.
 - Para leer el estado real desde fuera: el botón de perfil de Teams expone
   `AutomationId=idna-me-control-avatar-trigger` y su `Name` es
   *"Tu perfil, estado Disponible"* (UIA). Útil para verificar sin tocar nada.

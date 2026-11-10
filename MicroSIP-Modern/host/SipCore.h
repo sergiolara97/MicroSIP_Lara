@@ -15,10 +15,6 @@
 // Timers del host (WM_TIMER).
 constexpr UINT MSIP_TIMER_DTMF = 1;
 constexpr UINT MSIP_TIMER_AUTOANSWER = 2;
-// Aplica el estado de Teams con retardo: dos ms-teams.exe seguidos se pisan.
-constexpr UINT MSIP_TIMER_TEAMS = 5;
-// Estado de Teams a aplicar (wParam 1 = ocupado), en el hilo de la ventana.
-constexpr UINT MSIP_TEAMS_STATE_MSG = WM_APP + 7;
 
 struct MsipCall {
 	int id = -1;
@@ -199,8 +195,6 @@ public:
 	void SetSetting(const char* key, const std::string& value);
 
 private:
-	// Publica el estado en Teams y anota cuando se hizo.
-	void ApplyTeamsState(bool busy);
 	SipCore() = default;
 	void ApplyAccounts();
 	bool HasConfiguredAccounts(const std::wstring& path) const;
@@ -269,10 +263,6 @@ private:
 	bool singleInstance_ = true;
 	bool localDtmf_ = true;
 	bool alwaysOnTop_ = false;
-	// Ultimo estado publicado en Teams (para no repetir el comando).
-	bool teamsBusy_ = false;
-	bool teamsPending_ = false;
-	DWORD teamsCmdTick_ = 0;
 	pjsua_transport_id udpTransport_ = -1;
 	pjsua_transport_id tcpTransport_ = -1;
 	pjsua_transport_id tlsTransport_ = -1;

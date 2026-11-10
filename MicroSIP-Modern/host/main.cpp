@@ -24,7 +24,6 @@
 #include "SipCore.h"
 #include "JabraLink.h"
 #include "HidLink.h"
-#include "TeamsPresence.h"
 #include "CallToast.h"
 #include "TrayIcon.h"
 
@@ -1409,10 +1408,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case MSIP_HID_BUTTON_MSG:
 		OnHidButton(wParam != 0);
-		return 0;
-
-	case MSIP_TEAMS_STATE_MSG:
-		TeamsPresence::Apply(wParam != 0);
 		return 0;
 
 	case WM_DESTROY:
